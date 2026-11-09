@@ -1,0 +1,470 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Architecture of Excellence</title>
+<meta name="description" content="The Architecture of Excellence by Matthew Schmidt. An exploration of organizations, people and performance. The introduction: how one clean line to the customer gets crowded, and why nobody notices.">
+<meta name="color-scheme" content="light dark">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500&family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..500&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="book.css">
+<style>
+/* Fig. 1 only: One line to the customer */
+.parts {
+  display: grid;
+  row-gap: var(--s-9);
+  padding-top: var(--s-8);
+}
+
+.part { text-align: center; }
+
+.part-label {
+  margin-bottom: var(--s-6);
+  color: var(--ink);
+}
+.part-label span {
+  display: inline-block;
+  padding-bottom: var(--s-1);
+  border-bottom: 1px solid var(--clay);
+}
+
+.part-story {
+  max-width: 20rem;
+  margin: 0 auto var(--s-6);
+  font-family: var(--font-sans);
+  font-size: var(--fs-fig);
+  line-height: 1.55;
+  text-wrap: balance;
+}
+
+/* Part A: one short clean segment */
+.segment {
+  position: relative;
+  width: var(--line-w);
+  height: var(--a-len);
+  margin-inline: auto;
+  background: var(--clay);
+}
+.pulse {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: var(--pulse);
+  height: var(--pulse);
+  margin: calc(var(--pulse) / -2) 0 0 calc(var(--pulse) / -2);
+  border-radius: 50%;
+  background: var(--clay);
+  box-shadow: 0 0 0 .3125rem var(--clay-halo);
+  opacity: 0;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .pulse { animation: travel var(--dur-pulse) var(--ease-travel) infinite; }
+}
+@keyframes travel {
+  0% { transform: translateY(0); opacity: 0; }
+  8% { transform: translateY(0); opacity: 1; }
+  38% { transform: translateY(var(--a-len)); opacity: 1; }
+  52%, 100% { transform: translateY(var(--a-len)); opacity: 0; }
+}
+
+/* Part B: the same line, grown long */
+.track { position: relative; }
+
+.track-line {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: var(--line-w);
+  margin-left: calc(var(--line-w) / -2);
+  background: var(--rule);
+  z-index: 0;
+}
+.track-fill {
+  position: absolute;
+  inset: 0;
+  background: var(--clay);
+  transform-origin: top;
+  transform: scaleY(1);
+}
+.track-dot {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  z-index: 1;
+  width: var(--pulse);
+  height: var(--pulse);
+  margin: calc(var(--pulse) / -2) 0 0 calc(var(--pulse) / -2);
+  border-radius: 50%;
+  background: var(--clay);
+  box-shadow: 0 0 0 .3125rem var(--clay-halo);
+  opacity: 0;
+}
+
+.stops { list-style: none; }
+
+.stop {
+  position: relative;
+  z-index: 2;
+  padding-top: var(--b-stretch);
+}
+.stop-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s-3);
+  width: fit-content;
+  max-width: min(100%, 19rem);
+  margin-inline: auto;
+  padding: 0 var(--s-4) var(--s-3);
+  background: var(--paper);
+  transition: transform var(--dur-settle) var(--ease);
+}
+.stop-text {
+  font-family: var(--font-sans);
+  font-size: var(--fs-fig);
+  line-height: 1.5;
+  color: var(--ink);
+  text-wrap: balance;
+  transition: color var(--dur-settle) var(--ease);
+}
+.stop-day {
+  font-family: var(--font-mono);
+  font-size: var(--fs-label);
+  letter-spacing: .06em;
+  color: var(--clay);
+  transition: color var(--dur-settle) var(--ease);
+}
+
+.track-end { padding-top: var(--b-stretch); }
+
+/* Live state: added by JS only when motion is welcome and the
+   scroll handler is running. Nothing is hidden, only quieter. */
+.fig-live .track-fill {
+  transform: scaleY(var(--fill, 0));
+  transition: transform var(--dur-fill) var(--ease);
+}
+.fig-live .track-dot {
+  opacity: calc(1 - var(--passed, 0) * .11);
+  transform: translateY(var(--tip, 0px)) scale(calc(1 - var(--passed, 0) * .08));
+  transition: transform var(--dur-fill) var(--ease), opacity var(--dur-settle) var(--ease);
+}
+.fig-live .track-dot.is-home { opacity: 0; }
+.fig-live .stop:not(.is-reached) .stop-body { transform: translateY(calc(var(--s-4) * -1)); }
+.fig-live .stop:not(.is-reached) .tag { color: var(--muted); border-color: var(--rule); }
+.fig-live .stop:not(.is-reached) .stop-text,
+.fig-live .stop:not(.is-reached) .stop-day { color: var(--muted); }
+.fig-live .stop.is-waiting .tag { box-shadow: 0 0 0 .3125rem var(--clay-halo); }
+.fig-live .track-end:not(.is-reached) .node--customer { border-color: var(--rule); }
+.fig-live .track-end:not(.is-reached) .total { color: var(--muted); }
+.fig-live .track-end.is-reached .node--customer { background: var(--clay); border-color: var(--clay); }
+
+
+/* Wide: day one and some years later, side by side.
+   The short line stays in view while the long one passes. */
+@media (min-width: 56rem) {
+  .parts {
+    grid-template-columns: 1fr 1fr;
+    column-gap: var(--s-8);
+    align-items: start;
+  }
+  .part--a {
+    position: sticky;
+    top: 18vh;
+  }
+  .part--b { padding-top: 0; }
+}
+</style>
+</head>
+<body>
+
+<a class="skip" href="#introduction">Skip to content</a>
+
+<header class="cover" role="banner">
+  <p class="label cover-eyebrow">An exploration of organizations, people and performance</p>
+  <div class="cover-main">
+    <h1 class="cover-title">The Architecture <em>of Excellence</em></h1>
+    <p class="cover-line">See clearly. Understand deeply. Act intentionally.</p>
+    <p class="label cover-by">Matthew Schmidt</p>
+  </div>
+  <a class="begin label" href="#introduction">Begin<span class="begin-line" aria-hidden="true"></span></a>
+</header>
+
+<main id="main">
+
+  <section class="chapter" id="introduction" aria-labelledby="intro-title" tabindex="-1">
+    <div class="measure prose">
+      <p class="label kicker">Introduction</p>
+      <h2 class="h2" id="intro-title">Nobody voted for this.</h2>
+      <p class="lede">Nobody ever voted to slow the company down.</p>
+      <p>There was no meeting where it was decided that customers should wait longer, or that capable people should spend Thursday preparing for Friday. It accumulated, the way lint does.</p>
+      <p>I’ve spent twenty years in analytics, close to the place where a company’s data meets its decisions. What I kept finding is that organizations rarely fail for lack of information or good intentions. They have more data than they can turn into insight and more strategy than they can turn into action. They fail in the gap between knowing and doing.</p>
+      <p>Here is how it happens.</p>
+    </div>
+  </section>
+
+  <figure class="fig" id="fig-1" aria-labelledby="fig-title">
+    <div class="fig-inner">
+      <div class="fig-head">
+        <p class="label fig-num">Fig. 1</p>
+        <h3 class="fig-title" id="fig-title">One line to the customer</h3>
+        <p class="fig-sub">The same company, twice.</p>
+      </div>
+
+      <div class="parts">
+
+        <div class="part part--a">
+          <h4 class="label part-label"><span>Day one</span></h4>
+          <p class="part-story">A customer has a problem. Someone understands it. Someone decides. The company delivers.</p>
+          <div class="endpoint endpoint--start">
+            <span class="label endpoint-label">The work</span>
+            <span class="node" aria-hidden="true"></span>
+          </div>
+          <div class="segment" aria-hidden="true"><span class="pulse"></span></div>
+          <div class="endpoint endpoint--end">
+            <span class="node node--customer" aria-hidden="true"></span>
+            <span class="label endpoint-label">The customer</span>
+            <span class="total">1 day</span>
+          </div>
+        </div>
+
+        <div class="part part--b">
+          <h4 class="label part-label"><span>Some years later</span></h4>
+          <div class="track" data-track>
+            <div class="track-line" aria-hidden="true"><div class="track-fill"></div></div>
+            <span class="track-dot is-home" aria-hidden="true" data-dot></span>
+
+            <div class="endpoint endpoint--start">
+              <span class="label endpoint-label">The work</span>
+              <span class="node" aria-hidden="true"></span>
+            </div>
+
+            <ol class="stops">
+              <li class="stop" data-stop>
+                <div class="stop-body">
+                  <span class="tag">Approval</span>
+                  <span class="stop-text">A customer complained, so someone added an approval.</span>
+                  <span class="stop-day">Day 3</span>
+                </div>
+              </li>
+              <li class="stop" data-stop>
+                <div class="stop-body">
+                  <span class="tag">Form</span>
+                  <span class="stop-text">The approval needed a form.</span>
+                  <span class="stop-day">Day 4</span>
+                </div>
+              </li>
+              <li class="stop" data-stop>
+                <div class="stop-body">
+                  <span class="tag">Report</span>
+                  <span class="stop-text">The form needed a report.</span>
+                  <span class="stop-day">Day 6</span>
+                </div>
+              </li>
+              <li class="stop" data-stop>
+                <div class="stop-body">
+                  <span class="tag">Meeting</span>
+                  <span class="stop-text">The report needed a meeting.</span>
+                  <span class="stop-day">Day 7</span>
+                </div>
+              </li>
+              <li class="stop" data-stop>
+                <div class="stop-body">
+                  <span class="tag">Weekly</span>
+                  <span class="stop-text">The meeting went well, so now it’s weekly.</span>
+                  <span class="stop-day">Day 9</span>
+                </div>
+              </li>
+            </ol>
+
+            <div class="track-end" data-end>
+              <div class="endpoint endpoint--end">
+                <span class="node node--customer" aria-hidden="true" data-end-node></span>
+                <span class="label endpoint-label">The customer</span>
+                <span class="total">9 days</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+    <figcaption class="fig-cap">An illustration, not a measurement. The days are invented. The pattern is not.</figcaption>
+  </figure>
+
+  <div class="chapter">
+    <div class="measure prose">
+      <p>Every one of those was a good idea on the day it was made. That’s what makes it hard to see. There is no bad decision to point at. There’s only a customer who used to wait a day and now waits nine, and a company that is very busy explaining why.</p>
+    </div>
+  </div>
+
+  <blockquote class="pull">
+    <p>The hardest thing to see is what everyone has learned to accept.</p>
+  </blockquote>
+
+  <section class="chapter" aria-labelledby="what-title">
+    <div class="measure prose section-break">
+      <h2 class="h2" id="what-title">What this book is</h2>
+      <p>This is a book about that line. How it gets crowded, why nobody notices, and what it takes to clear it and keep it clear.</p>
+      <p>It isn’t a method. There is nothing to fill in and nothing to score. It’s a way of looking.</p>
+      <p>It looks in three places. How the business creates value. How the system creates leverage. How people get to do their best work. Each shows what the others miss, and the problems that matter most tend to live where they overlap.</p>
+      <p>Underneath are seven forces. They read like nouns. They behave like verbs.</p>
+
+      <ol class="forces">
+        <li class="force"><span class="force-num">01</span><span><span class="force-name">Awareness.</span> <span class="force-line">Seeing what is actually happening.</span></span></li>
+        <li class="force"><span class="force-num">02</span><span><span class="force-name">Trust.</span> <span class="force-line">Making it safe to say so.</span></span></li>
+        <li class="force"><span class="force-num">03</span><span><span class="force-name">Conditions.</span> <span class="force-line">Making good work possible.</span></span></li>
+        <li class="force"><span class="force-num">04</span><span><span class="force-name">Value.</span> <span class="force-line">Keeping the customer in the room.</span></span></li>
+        <li class="force"><span class="force-num">05</span><span><span class="force-name">Incentives.</span> <span class="force-line">Rewarding what you say you want.</span></span></li>
+        <li class="force"><span class="force-num">06</span><span><span class="force-name">Leverage.</span> <span class="force-line">Making an improvement last without a hero.</span></span></li>
+        <li class="force"><span class="force-num">07</span><span><span class="force-name">Excellence.</span> <span class="force-line">Holding the standard when nobody is checking.</span></span></li>
+      </ol>
+
+      <p>They compound in whichever direction they point. When they reinforce one another, individual talent becomes collective performance. When they work against one another, dysfunction compounds just as reliably.</p>
+      <p class="coda">Culture is what everyday decisions and consequences reinforce, not what is written on the walls.</p>
+    </div>
+  </section>
+
+  <section class="chapter" aria-labelledby="how-title">
+    <div class="measure prose section-break">
+      <h2 class="h2" id="how-title">How to read it</h2>
+      <p>Slowly, if you can. The chapters are short, and each one ends with something to ponder. It isn’t a test, and there is no answer to send anywhere. It’s something to notice the next time you’re at work.</p>
+      <p>You won’t meet anyone in these pages who is doing it wrong on purpose. Everyone here is reasonable. That is the problem. It’s also the good news, because reasonable people can change a system once they can see it.</p>
+    </div>
+  </section>
+
+  <section class="ponder" aria-labelledby="ponder-label">
+    <div class="ponder-inner">
+      <p class="label" id="ponder-label">Something to ponder</p>
+      <p class="ponder-1">Somewhere in your week there is a report nobody reads.</p>
+      <p class="ponder-2">You don’t have to cancel it. Just know which one it is.</p>
+    </div>
+  </section>
+
+  <section class="next" aria-labelledby="next-label">
+    <p class="label" id="next-label">Next</p>
+    <p class="next-text"><a class="next-link" href="chapter-one.html"><span class="next-num">Chapter one.</span> <span class="next-title">The Organization That Lost Its Way.</span></a></p>
+  </section>
+
+</main>
+
+<footer class="foot" role="contentinfo">
+  <p class="label">Made by Matty</p>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+  var root = document.documentElement;
+  var track = document.querySelector("[data-track]");
+  var fig = document.getElementById("fig-1");
+  if (!track || !fig || !window.requestAnimationFrame) return;
+
+  var mq = window.matchMedia ? window.matchMedia("(prefers-reduced-motion: reduce)") : null;
+  if (mq && mq.matches) return;
+
+  var dot = track.querySelector("[data-dot]");
+  var end = track.querySelector("[data-end]");
+  var endNode = track.querySelector("[data-end-node]");
+  var stops = Array.prototype.slice.call(track.querySelectorAll("[data-stop]"));
+  var ticking = false;
+  var listening = false;
+  var io = null;
+
+  function update() {
+    ticking = false;
+    var h = track.offsetHeight;
+    if (!h) return;
+    var vh = window.innerHeight || document.documentElement.clientHeight;
+    var read = vh * 0.6;
+    var hold = vh * 0.07;
+    var p = read - track.getBoundingClientRect().top;
+    if (p < 0) p = 0;
+    if (p > h) p = h;
+
+    var tip = p;
+    var passed = 0;
+
+    for (var i = 0; i < stops.length; i++) {
+      var stop = stops[i];
+      var body = stop.firstElementChild;
+      var top = stop.offsetTop + body.offsetTop;
+      var bottom = top + body.offsetHeight;
+      var reached = p >= top;
+      var waiting = reached && p < bottom + hold;
+      stop.classList.toggle("is-reached", reached);
+      stop.classList.toggle("is-waiting", waiting);
+      if (waiting) tip = top;
+      if (p >= bottom + hold) passed++;
+    }
+
+    var endCenter = end.offsetTop + endNode.offsetTop + endNode.offsetHeight / 2;
+    var arrived = p >= endCenter;
+    end.classList.toggle("is-reached", arrived);
+    if (tip > endCenter) tip = endCenter;
+
+    track.style.setProperty("--fill", arrived ? "1" : (tip / h).toFixed(4));
+    track.style.setProperty("--tip", tip.toFixed(1) + "px");
+    track.style.setProperty("--passed", String(passed));
+    if (dot) dot.classList.toggle("is-home", p <= 0 || arrived);
+  }
+
+  function onScroll() {
+    if (!ticking) {
+      ticking = true;
+      window.requestAnimationFrame(update);
+    }
+  }
+
+  function listen(on) {
+    if (on === listening) return;
+    listening = on;
+    if (on) {
+      window.addEventListener("scroll", onScroll, { passive: true });
+      window.addEventListener("resize", onScroll);
+    } else {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+    }
+  }
+
+  function stopLive() {
+    listen(false);
+    if (io) io.disconnect();
+    root.classList.remove("fig-live");
+  }
+
+  try {
+    root.classList.add("fig-live");
+    update();
+  } catch (e) {
+    root.classList.remove("fig-live");
+    return;
+  }
+
+  if ("IntersectionObserver" in window) {
+    io = new IntersectionObserver(function (entries) {
+      for (var i = 0; i < entries.length; i++) {
+        listen(entries[i].isIntersecting);
+      }
+      onScroll();
+    }, { rootMargin: "50% 0px 50% 0px" });
+    io.observe(fig);
+  } else {
+    listen(true);
+  }
+
+  window.addEventListener("load", onScroll);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(onScroll);
+
+  if (mq) {
+    var onPref = function (e) { if (e.matches) stopLive(); };
+    if (mq.addEventListener) mq.addEventListener("change", onPref);
+    else if (mq.addListener) mq.addListener(onPref);
+  }
+})();
+</script>
+</body>
+</html>

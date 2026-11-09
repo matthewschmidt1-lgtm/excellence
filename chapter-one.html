@@ -1,0 +1,513 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Organization That Lost Its Way | The Architecture of Excellence</title>
+<meta name="description" content="Chapter one of The Architecture of Excellence by Matthew Schmidt. Northfield, an invented iced tea company, turns a degree at a time, and every degree comes with a good reason.">
+<meta name="color-scheme" content="light dark">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500&family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..500&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="book.css">
+<style>
+/* ============================================================
+   Fig. 2 only: A degree at a time
+   Geometry lives in one coordinate space, 100 units wide and
+   485 units tall. The SVG and the HTML labels share it, and the
+   box keeps that aspect ratio, so every angle is the same at
+   every width: 4, 8, 13 and 20 degrees from vertical.
+   ============================================================ */
+:root {
+  --drift-max: 28rem;
+  --drift-pad: 1rem;      /* clear space between a line and its label */
+  --drift-sink: .9rem;    /* how far a label's foot sits below its turn */
+  --drift-node: .625rem;
+  --fs-promise: 1.25rem;
+}
+@media (min-width: 48rem) {
+  :root { --fs-promise: 1.375rem; }
+}
+
+.drift {
+  max-width: var(--drift-max);
+  margin: 0 auto;
+  padding-top: var(--s-8);
+}
+
+.drift-draw {
+  position: relative;
+  aspect-ratio: 100 / 485;
+}
+
+.drift-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.drift-svg line,
+.drift-svg polyline {
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+.drift-true { stroke: var(--clay); }
+.drift-path { stroke: var(--ink); }
+
+/* anything placed in the shared coordinate space */
+.at {
+  position: absolute;
+  left: calc(var(--x) * 1%);
+  top: calc(var(--y) / 4.85 * 1%);
+}
+
+.drift-node {
+  z-index: 2;
+  width: var(--drift-node);
+  height: var(--drift-node);
+  margin: calc(var(--drift-node) / -2) 0 0 calc(var(--drift-node) / -2);
+  border-radius: 50%;
+  background: var(--paper);
+  border: var(--line-w) solid var(--ink);
+  transition: border-color var(--dur-settle) var(--ease), background-color var(--dur-settle) var(--ease);
+}
+.drift-node--start { background: var(--ink); }
+.drift-node--store { border-color: var(--clay); }
+.drift-node--does { background: var(--ink); }
+
+/* labels sit up and to the right of their turn: above a turn the
+   line is always further left, so the label never meets it */
+.drift-label {
+  position: absolute;
+  right: 0;
+  left: calc(var(--x) * 1% + var(--drift-pad));
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--s-2);
+  text-align: left;
+  transition: transform var(--dur-settle) var(--ease);
+}
+.drift-label--start { top: calc(var(--drift-node) * -1); }
+.turn .drift-label {
+  bottom: calc((100 - var(--y) / 4.85) * 1% - var(--drift-sink));
+}
+
+.turns { list-style: none; margin: 0; padding: 0; }
+
+.drift-added {
+  font-family: var(--font-sans);
+  font-size: var(--fs-small);
+  line-height: 1.45;
+  color: var(--ink);
+  max-width: 15rem;
+  transition: color var(--dur-settle) var(--ease);
+}
+.promise {
+  font-family: var(--font-serif);
+  font-size: var(--fs-promise);
+  font-style: italic;
+  font-weight: 340;
+  line-height: 1.2;
+  color: var(--ink);
+  max-width: 15rem;
+  text-wrap: balance;
+  transition: color var(--dur-settle) var(--ease);
+}
+.promise--true { color: var(--clay); }
+
+/* the gap: a measured span between the two ends */
+.drift-gap {
+  position: absolute;
+  top: 100%;
+  left: 8%;
+  width: 78.114%;
+  height: 0;
+}
+.drift-gap::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  border-top: 1px dashed var(--clay);
+  transform-origin: left center;
+  transition: transform var(--dur-settle) var(--ease);
+}
+.drift-gap-label {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  transform: translate(-50%, -50%);
+  padding: 0 var(--s-3);
+  background: var(--paper);
+  color: var(--clay);
+  white-space: nowrap;
+  transition: color var(--dur-settle) var(--ease);
+}
+
+.drift-ends {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: var(--s-4);
+  padding-top: var(--s-5);
+}
+.drift-end { display: flex; flex-direction: column; gap: var(--s-2); }
+.drift-end--store {
+  align-items: flex-start;
+  text-align: left;
+  padding-left: calc(8% - var(--drift-node) / 2);
+}
+.drift-end--does {
+  align-items: flex-end;
+  text-align: right;
+  padding-right: calc(13.886% - var(--drift-node) / 2);
+}
+.drift-end .label { color: var(--ink); }
+
+.drift-dot {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 3;
+  width: var(--pulse);
+  height: var(--pulse);
+  margin: calc(var(--pulse) / -2) 0 0 calc(var(--pulse) / -2);
+  border-radius: 50%;
+  opacity: 0;
+  pointer-events: none;
+}
+.drift-dot--true { background: var(--clay); box-shadow: 0 0 0 .3125rem var(--clay-halo); }
+.drift-dot--does { background: var(--ink); }
+
+/* Live state: only added by JS, never under reduced motion.
+   Nothing is hidden; the lines draw down as the reader does. */
+.drift-live .drift-svg {
+  clip-path: inset(0 0 calc((1 - var(--draw, 0)) * 100%) 0);
+  transition: clip-path var(--dur-fill) var(--ease);
+}
+.drift-live .drift-dot {
+  opacity: 1;
+  transition: transform var(--dur-fill) var(--ease), opacity var(--dur-quick) var(--ease);
+}
+.drift-live .drift-dot.is-home { opacity: 0; }
+.drift-live .turn:not(.is-reached) .drift-label { transform: translateY(calc(var(--s-3) * -1)); }
+.drift-live .turn:not(.is-reached) .tag { color: var(--muted); border-color: var(--rule); }
+.drift-live .turn:not(.is-reached) .drift-added,
+.drift-live .turn:not(.is-reached) .promise { color: var(--muted); }
+.drift-live .turn:not(.is-reached) .drift-node { border-color: var(--rule); }
+.drift-live .drift:not(.is-arrived) .drift-gap::before { transform: scaleX(0); }
+.drift-live .drift:not(.is-arrived) .drift-gap-label,
+.drift-live .drift:not(.is-arrived) .drift-end .label,
+.drift-live .drift:not(.is-arrived) .promise--true { color: var(--muted); }
+.drift-live .drift:not(.is-arrived) .drift-node--store,
+.drift-live .drift:not(.is-arrived) .drift-node--does { border-color: var(--rule); background: var(--paper); }
+</style>
+</head>
+<body>
+
+<a class="skip" href="#chapter">Skip to content</a>
+
+<header class="running" role="banner">
+  <a class="label" href="index.html">The Architecture of Excellence</a>
+</header>
+
+<main id="main">
+
+  <section class="opening" id="chapter" aria-labelledby="chapter-title" tabindex="-1">
+    <div class="measure">
+      <p class="label kicker">Chapter one</p>
+      <h1 class="opening-title" id="chapter-title">The Organization That Lost Its Way</h1>
+      <p class="lede">No company gets lost all at once. It turns a degree at a time, and every degree comes with a good reason.</p>
+    </div>
+  </section>
+
+  <section class="chapter" aria-labelledby="s-today">
+    <div class="measure prose section-break">
+      <h2 class="h2" id="s-today">Fix it today</h2>
+      <p>I’ll call the company Northfield. It isn’t real. You may have worked there.</p>
+      <p>Northfield made iced tea. In its first year it had eleven employees and one rule that nobody had written down. If a store has a problem, fix it today.</p>
+      <p>A store manager would call to say a case had arrived with broken bottles. Whoever picked up the phone apologized and put a new case on the next truck. That was the entire process. It cost about forty dollars and took about four minutes.</p>
+      <p>Stores liked dealing with Northfield. That is most of why it grew.</p>
+    </div>
+  </section>
+
+  <section class="chapter" aria-labelledby="s-rule">
+    <div class="measure prose section-break">
+      <h2 class="h2" id="s-rule">A sensible rule</h2>
+      <p>In year three, a store claimed replacements for cases that had never been broken. It happened twice and cost about six hundred dollars.</p>
+      <p>So Northfield added a rule. Any replacement over a hundred dollars needed a manager’s approval. Nobody objected, because nobody should have. It was a sensible answer to a real problem.</p>
+      <p>The approval needed something to approve, so there was a form. The form produced numbers, so there was a report. The report raised questions, so there was a meeting. This is the line from the introduction, with a name on it.</p>
+      <p>Here is the part that matters. The six hundred dollars appeared on a page, with a store’s name beside it. The cost of the rule never appeared anywhere. It was paid a few minutes at a time, by store managers on hold and employees filling in forms, and nobody was writing a report about that.</p>
+      <p>One cost had a name on it. The other didn’t. So the rule stayed, and the next one was easier to add.</p>
+      <p>The people on the phones adapted, because people do. They stopped saying “we’ll fix it today” and started saying “I’ve opened a ticket.” Replacements of ninety-nine dollars became surprisingly common.</p>
+    </div>
+  </section>
+
+  <figure class="fig" id="fig-2" aria-labelledby="fig2-title">
+    <div class="fig-inner">
+      <div class="fig-head">
+        <p class="label fig-num">Fig. 2</p>
+        <h3 class="fig-title" id="fig2-title">A degree at a time</h3>
+        <p class="fig-sub">Northfield’s promise to a store, year by year.</p>
+      </div>
+
+      <div class="drift" data-drift>
+        <div class="drift-draw" data-draw>
+          <svg class="drift-svg" viewBox="0 0 100 485" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+            <polyline class="drift-path" points="8,0 8,97 14.783,194 28.415,291 50.809,388 86.114,485"/>
+            <line class="drift-true" x1="8" y1="0" x2="8" y2="485"/>
+          </svg>
+
+          <span class="at drift-node drift-node--start" style="--x:8;--y:0" aria-hidden="true"></span>
+          <div class="at drift-label drift-label--start" style="--x:8;--y:0">
+            <span class="tag">Year 1</span>
+            <span class="promise">Fix it today.</span>
+          </div>
+
+          <ol class="turns">
+            <li class="turn" data-turn style="--x:8;--y:97">
+              <span class="at drift-node" aria-hidden="true"></span>
+              <div class="drift-label">
+                <span class="tag">Year 3</span>
+                <span class="drift-added">An approval over $100.</span>
+                <span class="promise">This week.</span>
+              </div>
+            </li>
+            <li class="turn" data-turn style="--x:14.783;--y:194">
+              <span class="at drift-node" aria-hidden="true"></span>
+              <div class="drift-label">
+                <span class="tag">Year 5</span>
+                <span class="drift-added">A form and a monthly report.</span>
+                <span class="promise">Ten business days.</span>
+              </div>
+            </li>
+            <li class="turn" data-turn style="--x:28.415;--y:291">
+              <span class="at drift-node" aria-hidden="true"></span>
+              <div class="drift-label">
+                <span class="tag">Year 7</span>
+                <span class="drift-added">A claims team with a target.</span>
+                <span class="promise">Ten business days, nine times out of ten.</span>
+              </div>
+            </li>
+            <li class="turn" data-turn style="--x:50.809;--y:388">
+              <span class="at drift-node" aria-hidden="true"></span>
+              <div class="drift-label">
+                <span class="tag">Year 9</span>
+                <span class="drift-added">A slide celebrating the target.</span>
+                <span class="promise">Target met.</span>
+              </div>
+            </li>
+          </ol>
+
+          <span class="at drift-node drift-node--store" style="--x:8;--y:485" aria-hidden="true"></span>
+          <span class="at drift-node drift-node--does" style="--x:86.114;--y:485" aria-hidden="true"></span>
+
+          <div class="drift-gap"><span class="label drift-gap-label">The gap</span></div>
+
+          <span class="drift-dot drift-dot--true is-home" aria-hidden="true" data-dot-true></span>
+          <span class="drift-dot drift-dot--does is-home" aria-hidden="true" data-dot-does></span>
+        </div>
+
+        <div class="drift-ends">
+          <div class="drift-end drift-end--store">
+            <span class="label">What the store needs</span>
+            <span class="promise promise--true">Still today.</span>
+          </div>
+          <div class="drift-end drift-end--does">
+            <span class="label">What Northfield does</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <figcaption class="fig-cap">An illustration, not a measurement. Northfield is invented, and no single turn here is more than a few degrees.</figcaption>
+  </figure>
+
+  <section class="chapter" aria-labelledby="s-tolerance">
+    <div class="measure prose section-break">
+      <h2 class="h2" id="s-tolerance">Within tolerance</h2>
+      <p>Look at the top of that figure and you can’t tell the two lines apart. That is the trouble with drift. Up close, at the moment each decision is made, the company is still pointed almost exactly at the customer.</p>
+      <p>The promise moved the same way. “Today” became “this week.” “This week” became “ten business days.” By year nine Northfield hit ten days nine times out of ten, and someone made a slide to celebrate.</p>
+      <p>Nobody lowered the standard. It was renegotiated, a little at a time, by people comparing this quarter with last quarter. Northfield had stopped measuring itself against what a store needed. It measured itself against Northfield.</p>
+    </div>
+  </section>
+
+  <blockquote class="pull">
+    <p>A company can hit every one of its targets and still be facing the wrong way.</p>
+  </blockquote>
+
+  <section class="chapter" aria-labelledby="s-sounds">
+    <div class="measure prose section-break">
+      <h2 class="h2" id="s-sounds">What it sounds like</h2>
+      <p>You can hear drift before you can see it. It sounds like this.</p>
+      <ul class="overheard">
+        <li>“We need more data.”</li>
+        <li>“Let’s get everyone aligned first.”</li>
+        <li>“Let’s add a step so we can track it.”</li>
+        <li>“That’s within tolerance.”</li>
+        <li>“That’s how it’s done here.”</li>
+      </ul>
+      <p>Each of these is reasonable on its own. Together, said often enough, they become a pattern of deferred decisions.</p>
+      <p>The last one is the one to listen for. When a new hire at Northfield asked why a replacement took ten days, the answer was the history of the rule. The two false claims, the six hundred dollars, year three. It was a true answer. It explained where the rule came from. It said nothing about whether the rule was still worth what it cost.</p>
+    </div>
+  </section>
+
+  <section class="chapter" aria-labelledby="s-nobody">
+    <div class="measure prose section-break">
+      <h2 class="h2" id="s-nobody">Nobody did this</h2>
+      <p>Here is what I find hardest about Northfield. There is nobody to be angry at.</p>
+      <p>The founder still stood up at the company meeting every year and said “we fix it today,” and meant it. The manager who approved replacements was careful and fair. The claims team was proud of its numbers, and the numbers were real.</p>
+      <p>Leadership believed one thing. Employees lived another. Stores experienced a third. All three were happening at once, in the same company, and each group was telling the truth about what it could see.</p>
+      <p>And the rule itself was never wrong. The false claims were real. Some rules are holding something up, and a company that tears out every rule it finds will learn which ones the hard way.</p>
+      <p>Northfield’s mistake was smaller and more ordinary than that. It never went back and weighed the rule against what the rule cost. Every rule at Northfield had someone who would be blamed if it were removed. None had someone who would be thanked.</p>
+    </div>
+  </section>
+
+  <section class="chapter" aria-labelledby="s-alone">
+    <div class="measure prose section-break">
+      <h2 class="h2" id="s-alone">Left alone</h2>
+      <p>Every company starts by serving a customer. Left alone, it drifts toward serving itself.</p>
+      <p>“Left alone” is the important part. Drift is not a failure of character. It is the default, the thing that happens when nobody is doing anything in particular about it.</p>
+      <p>So the opposite of drift is not speed, or fewer rules, or a new set of values on the wall. It is looking. Going back, on purpose and regularly, to the one reference that sits outside the building, which is the customer, and checking the heading against it.</p>
+      <p>A company that holds on to how it does things will drift. A company that holds on to why it does them can change everything else.</p>
+      <p>Northfield could not do that yet, because it could no longer see the gap. That is the next chapter. Before anything can be fixed, someone has to learn to see it.</p>
+    </div>
+  </section>
+
+  <section class="ponder" aria-labelledby="ponder-label">
+    <div class="ponder-inner">
+      <p class="label" id="ponder-label">Something to ponder</p>
+      <p class="ponder-1">Somewhere in your company, a delay that once needed an apology now needs nothing.</p>
+      <p class="ponder-2">Nobody decided that. You don’t have to fix it this week. It’s enough to see it.</p>
+    </div>
+  </section>
+
+  <section class="next" aria-labelledby="next-label">
+    <p class="label" id="next-label">Next</p>
+    <p class="next-text"><span class="next-num">Chapter two.</span> <span class="next-title">Learning to See.</span></p>
+    <p class="label soon">Coming soon</p>
+  </section>
+
+</main>
+
+<footer class="foot" role="contentinfo">
+  <p class="label">Made by Matty</p>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+  var root = document.documentElement;
+  var drift = document.querySelector("[data-drift]");
+  var draw = drift && drift.querySelector("[data-draw]");
+  var fig = document.getElementById("fig-2");
+  if (!drift || !draw || !fig || !window.requestAnimationFrame) return;
+
+  var mq = window.matchMedia ? window.matchMedia("(prefers-reduced-motion: reduce)") : null;
+  if (mq && mq.matches) return;
+
+  /* the same points the SVG draws, in its 100 by 485 space */
+  var PTS = [[8, 0], [8, 97], [14.783, 194], [28.415, 291], [50.809, 388], [86.114, 485]];
+  var H = 485;
+  var turns = Array.prototype.slice.call(drift.querySelectorAll("[data-turn]"));
+  var turnY = [97, 194, 291, 388];
+  var dotTrue = drift.querySelector("[data-dot-true]");
+  var dotDoes = drift.querySelector("[data-dot-does]");
+  var ticking = false;
+  var listening = false;
+  var io = null;
+
+  function xAt(y) {
+    for (var i = 1; i < PTS.length; i++) {
+      if (y <= PTS[i][1]) {
+        var a = PTS[i - 1], b = PTS[i];
+        return a[0] + (b[0] - a[0]) * ((y - a[1]) / (b[1] - a[1]));
+      }
+    }
+    return PTS[PTS.length - 1][0];
+  }
+
+  function update() {
+    ticking = false;
+    var r = draw.getBoundingClientRect();
+    if (!r.height) return;
+    var vh = window.innerHeight || document.documentElement.clientHeight;
+    var p = (vh * 0.6 - r.top) / r.height;
+    if (p < 0) p = 0;
+    if (p > 1) p = 1;
+    var y = p * H;
+
+    draw.style.setProperty("--draw", p.toFixed(4));
+    for (var i = 0; i < turns.length; i++) {
+      turns[i].classList.toggle("is-reached", y >= turnY[i]);
+    }
+    var arrived = p >= 1;
+    drift.classList.toggle("is-arrived", arrived);
+
+    var home = p <= 0 || arrived;
+    var py = p * r.height;
+    dotTrue.style.transform = "translate(" + (0.08 * r.width).toFixed(1) + "px," + py.toFixed(1) + "px)";
+    dotDoes.style.transform = "translate(" + (xAt(y) / 100 * r.width).toFixed(1) + "px," + py.toFixed(1) + "px)";
+    dotTrue.classList.toggle("is-home", home);
+    dotDoes.classList.toggle("is-home", home);
+  }
+
+  function onScroll() {
+    if (!ticking) {
+      ticking = true;
+      window.requestAnimationFrame(update);
+    }
+  }
+
+  function listen(on) {
+    if (on === listening) return;
+    listening = on;
+    if (on) {
+      window.addEventListener("scroll", onScroll, { passive: true });
+      window.addEventListener("resize", onScroll);
+    } else {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+    }
+  }
+
+  function stopLive() {
+    listen(false);
+    if (io) io.disconnect();
+    root.classList.remove("drift-live");
+  }
+
+  try {
+    root.classList.add("drift-live");
+    update();
+  } catch (e) {
+    root.classList.remove("drift-live");
+    return;
+  }
+
+  if ("IntersectionObserver" in window) {
+    io = new IntersectionObserver(function (entries) {
+      for (var i = 0; i < entries.length; i++) listen(entries[i].isIntersecting);
+      onScroll();
+    }, { rootMargin: "50% 0px 50% 0px" });
+    io.observe(fig);
+  } else {
+    listen(true);
+  }
+
+  window.addEventListener("load", onScroll);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(onScroll);
+
+  if (mq) {
+    var onPref = function (e) { if (e.matches) stopLive(); };
+    if (mq.addEventListener) mq.addEventListener("change", onPref);
+    else if (mq.addListener) mq.addListener(onPref);
+  }
+})();
+</script>
+</body>
+</html>
