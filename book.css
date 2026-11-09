@@ -985,3 +985,12 @@ a { color: inherit; }
 }
 .glyph--lg { width: var(--glyph-lg); height: var(--glyph-lg); }
 .sprite .dot { fill: currentColor; stroke: none; }
+
+/* ============================================================
+   Lens glyph: the three lenses as three small rings on the same
+   24 grid. A dot marks a region; a ring can be lifted in clay.
+   Rings are <symbol>s on each page, placed with <use>.
+   ============================================================ */
+.lens use { stroke-width: 1.5; }
+.lens .lens-hi { color: var(--clay); stroke-width: 2.25; }
+.lens .lens-dot { fill: var(--clay); stroke: none; }

@@ -1,0 +1,503 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Three Lenses | The Architecture of Excellence</title>
+<meta name="description" content="Chapter five of The Architecture of Excellence by Matthew Schmidt. Three sensible people look at the same receipt and see three different problems. Business, system and people, and why the answers that matter live where the three lenses overlap.">
+<meta name="color-scheme" content="light dark">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500&family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..500&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="book.css">
+<script>
+/* apply saved reading options before first paint; book.js does the rest */
+(function(){try{var p=JSON.parse(localStorage.getItem("aoe-prefs")||"{}"),r=document.documentElement,ok={text:/^(l|xl)$/,theme:/^(light|candle)$/,contrast:/^more$/,spacing:/^roomy$/,motion:/^reduce$/};for(var k in ok){if(typeof p[k]==="string"&&ok[k].test(p[k]))r.setAttribute("data-"+k,p[k])}}catch(e){}})();
+</script>
+<style>
+/* ============================================================
+   The lens paragraphs: a small mark, then ordinary prose
+   ============================================================ */
+.lens-para .lens-mark {
+  display: block;
+  color: var(--muted);
+  margin-bottom: var(--s-3);
+}
+@media (min-width: 64rem) {
+  .lens-para { position: relative; }
+  .lens-para .lens-mark {
+    position: absolute;
+    top: .2em;
+    right: calc(100% + var(--s-6));
+    margin: 0;
+  }
+}
+
+/* ============================================================
+   Fig. 6 only: Three places to look
+   Three open rings in ink. Only the middle, where all three
+   hold, takes the clay. Ring names sit outside the rings; the
+   answers sit inside as lettered marks; the overlaps and the
+   answers are spelled out in a key underneath.
+   The drawing shares one space with its labels: 100 wide, 92 tall.
+   ============================================================ */
+:root {
+  --ln-max: 24rem;
+  --ln-badge: 1.625rem;
+  --ln-stagger: 120ms;
+}
+
+.lenses {
+  max-width: var(--measure);
+  margin: 0 auto;
+  padding-top: var(--s-8);
+}
+.ln-stage { max-width: var(--ln-max); margin: 0 auto; }
+
+.ln-names {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--s-4);
+}
+.ln-name {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-1);
+  min-width: 0;
+}
+.ln-name .label { color: var(--ink); }
+.ln-line {
+  font-family: var(--font-sans);
+  font-size: var(--fs-small);
+  line-height: 1.35;
+  color: var(--muted);
+}
+.ln-name--right { text-align: right; align-items: flex-end; }
+.ln-name--bottom { align-items: center; text-align: center; }
+
+.ln-draw {
+  position: relative;
+  aspect-ratio: 100 / 92;
+  margin-block: var(--s-3);
+}
+.ln-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.ln-ring {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 1.5;
+  vector-effect: non-scaling-stroke;
+  transition: opacity var(--dur-settle) var(--ease);
+}
+.ln-centre {
+  fill: var(--clay-halo);
+  stroke: var(--clay);
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+  transition: opacity var(--dur-settle) var(--ease);
+}
+
+.ln-badge {
+  position: absolute;
+  z-index: 2;
+  left: calc(var(--x) * 1%);
+  top: calc(var(--y) / .92 * 1%);
+  display: grid;
+  place-items: center;
+  width: var(--ln-badge);
+  height: var(--ln-badge);
+  margin: calc(var(--ln-badge) / -2) 0 0 calc(var(--ln-badge) / -2);
+  border: 1px solid var(--ink);
+  border-radius: 50%;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: var(--fs-label);
+  font-weight: 500;
+  line-height: 1;
+  transition: opacity var(--dur-settle) var(--ease), transform var(--dur-settle) var(--ease);
+}
+.ln-badge--centre {
+  border-color: var(--clay);
+  background: var(--clay);
+  color: var(--paper);
+}
+
+/* the key: overlaps first, then the four answers */
+.ln-key {
+  margin-top: var(--s-7);
+  border-top: 1px solid var(--hairline);
+}
+.ln-overlaps {
+  list-style: none;
+  margin: 0;
+  padding: var(--s-5) 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(8.5rem, 1fr));
+  gap: var(--s-3) var(--s-5);
+  border-bottom: 1px solid var(--hairline);
+}
+.ln-overlaps li {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  font-family: var(--font-mono);
+  font-size: var(--fs-label);
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  color: var(--ink);
+}
+.ln-key .lens { width: 1.5rem; height: 1.5rem; color: var(--muted); }
+
+.ln-answers { list-style: none; margin: 0; padding: 0; }
+.ln-answer {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  column-gap: var(--s-4);
+  padding-block: var(--s-5);
+  border-bottom: 1px solid var(--hairline);
+}
+.ln-answer-mark {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s-2);
+  padding-top: .125rem;
+}
+.ln-answer-mark .ln-letter {
+  display: grid;
+  place-items: center;
+  width: var(--ln-badge);
+  height: var(--ln-badge);
+  border: 1px solid var(--ink);
+  border-radius: 50%;
+  font-family: var(--font-mono);
+  font-size: var(--fs-label);
+  font-weight: 500;
+  line-height: 1;
+}
+.ln-answer--centre .ln-letter { border-color: var(--clay); background: var(--clay); color: var(--paper); }
+.ln-answer-body { display: flex; flex-direction: column; gap: var(--s-1); min-width: 0; }
+.ln-answer-text {
+  font-family: var(--font-serif);
+  font-size: var(--fs-fig);
+  line-height: 1.35;
+  color: var(--ink);
+}
+.ln-where { color: var(--clay); }
+.ln-answer-note {
+  font-family: var(--font-sans);
+  font-size: var(--fs-small);
+  line-height: 1.45;
+  color: var(--muted);
+}
+
+/* Live state: added by JS only, removed by book.js for Still.
+   The rings draw in one at a time, then the three edge answers,
+   then the middle and its answer, last. */
+.lens-live .lenses:not(.s1) .ln-ring--b,
+.lens-live .lenses:not(.s2) .ln-ring--s,
+.lens-live .lenses:not(.s3) .ln-ring--p,
+.lens-live .lenses:not(.s5) .ln-centre { opacity: 0; }
+.lens-live .lenses:not(.s4) .ln-badge--edge,
+.lens-live .lenses:not(.s5) .ln-badge--centre {
+  opacity: 0;
+  transform: scale(.6);
+}
+.lens-live .ln-badge--edge:nth-of-type(2) { transition-delay: var(--ln-stagger); }
+.lens-live .ln-badge--edge:nth-of-type(3) { transition-delay: calc(var(--ln-stagger) * 2); }
+</style>
+</head>
+<body>
+
+<svg class="sprite" aria-hidden="true" focusable="false">
+  <!-- the three lenses, small: Business, System, People -->
+  <symbol id="lens-b" viewBox="0 0 24 24"><circle cx="9" cy="9.5" r="6.5" fill="none" stroke="currentColor"/></symbol>
+  <symbol id="lens-s" viewBox="0 0 24 24"><circle cx="15" cy="9.5" r="6.5" fill="none" stroke="currentColor"/></symbol>
+  <symbol id="lens-p" viewBox="0 0 24 24"><circle cx="12" cy="14.5" r="6.5" fill="none" stroke="currentColor"/></symbol>
+</svg>
+
+<a class="skip" href="#chapter">Skip to content</a>
+
+<header class="running" role="banner">
+  <a class="running-link" href="index.html">The Architecture of Excellence</a>
+  <a class="running-link running-contents" href="#contents">Contents</a>
+</header>
+
+<main id="main">
+
+  <section class="opening" id="chapter" aria-labelledby="chapter-title" tabindex="-1">
+    <div class="measure">
+      <p class="label kicker">Chapter five</p>
+      <h1 class="opening-title" id="chapter-title">The Three Lenses</h1>
+      <p class="lede">Three sensible people looked at the same receipt and saw three different problems. All of them were right.</p>
+    </div>
+  </section>
+
+  <section class="chapter" aria-labelledby="s-proposals">
+    <div class="measure prose section-break">
+      <h2 class="h2" id="s-proposals">Three proposals</h2>
+      <p>Ines’s receipt did what the photographs had not. It got a meeting of its own, and this time it was the first item.</p>
+      <p>Within a week there were three proposals on the table. Each came from someone good at their job, and each one would have worked, in the sense its author meant.</p>
+      <p>The head of finance looked at a hundred and forty-four thousand dollars and proposed cutting the claims team from four people to two.</p>
+      <p>The head of operations looked at ten steps and proposed a claims portal, so stores could file online and the form would never be incomplete.</p>
+      <p>The head of HR looked at the phones and proposed training in customer empathy, with an award each quarter for the best-handled claim.</p>
+      <p>Finance saw a cost. Operations saw a process. HR saw people. Nobody was wrong about what they saw.</p>
+    </div>
+  </section>
+
+  <section class="chapter" aria-labelledby="s-missed">
+    <div class="measure prose section-break">
+      <h2 class="h2" id="s-missed">What each one missed</h2>
+      <p>Run them forward. Cut the team in half and the same ten steps are done by two people. Sixteen days becomes thirty. The receipt gets shorter and the wait gets longer.</p>
+      <p>Build the portal and Northfield has made it faster to do something a store never wanted to do. A form you can file at midnight is still a form. The company would have spent a year improving a process whose best version was not existing.</p>
+      <p>Train the phone staff and they will apologize more warmly for a decision they are still not allowed to make. People who are asked to care more, inside a system that gives them no button, burn out or leave.</p>
+      <p>Each proposal improved the thing its author was looking at, and made something worse that its author was not.</p>
+    </div>
+  </section>
+
+  <section class="chapter" aria-labelledby="s-places">
+    <div class="measure prose section-break">
+      <h2 class="h2" id="s-places">Three places to look</h2>
+      <p>I use three lenses when I look at a company. I tend to use them in this order, though the order matters less than using all three.</p>
+      <p class="lens-para"><svg class="glyph glyph--lg lens lens-mark" viewBox="0 0 24 24" width="32" height="32" aria-hidden="true" focusable="false"><use href="#lens-s"/><use href="#lens-p"/><use class="lens-hi" href="#lens-b"/></svg>The first is the business. How it creates value, and for whom. Through this lens you are looking for what the customer came for, and whether the company’s effort is pointed at it. Its blind spot is improving a number without asking what the number is for.</p>
+      <p class="lens-para"><svg class="glyph glyph--lg lens lens-mark" viewBox="0 0 24 24" width="32" height="32" aria-hidden="true" focusable="false"><use href="#lens-b"/><use href="#lens-p"/><use class="lens-hi" href="#lens-s"/></svg>The second is the system. How work flows, how decisions get made, how effort turns into results. A good system makes the right thing the easy thing. Its blind spot is perfecting a process nobody should be running.</p>
+      <p class="lens-para"><svg class="glyph glyph--lg lens lens-mark" viewBox="0 0 24 24" width="32" height="32" aria-hidden="true" focusable="false"><use href="#lens-b"/><use href="#lens-s"/><use class="lens-hi" href="#lens-p"/></svg>The third is people. The judgment, knowledge and care that turn the other two into something real. Its blind spot is expecting people to make up, indefinitely, for a system that makes good work hard.</p>
+      <p>None of this is complicated. The difficulty is that almost everyone is trained in one lens and promoted for being good at it. A company’s org chart is, more or less, its three lenses kept in separate rooms.</p>
+    </div>
+  </section>
+
+  <section class="chapter" aria-labelledby="s-overlap">
+    <div class="measure prose section-break">
+      <h2 class="h2" id="s-overlap">Where they overlap</h2>
+      <p>Now put the regional manager from chapter three back in the picture. Her drivers replaced a broken case on the spot, out of a small budget, and she checked a sample of replacements every month.</p>
+      <p>Look at it through all three. For the business, the store got what it came for the same day, at the cost of forty dollars and a spot check. For the system, the decision sat with the person standing in front of the broken case, and there was nothing to route, approve or chase. For the people, a driver was trusted to use their judgment, and found that it was worth having.</p>
+      <p>It was not a compromise between three interests. It was one design that all three lenses agreed on. That is rarer than it sounds, and it is what I mean by a good answer.</p>
+    </div>
+  </section>
+
+  <figure class="fig" id="fig-6" aria-labelledby="fig6-title">
+    <div class="fig-inner">
+      <div class="fig-head">
+        <p class="label fig-num">Fig. 6</p>
+        <h3 class="fig-title" id="fig6-title">Three places to look</h3>
+        <p class="fig-sub">Four answers to the same receipt.</p>
+      </div>
+
+      <div class="lenses" data-lenses>
+        <div class="ln-stage">
+          <div class="ln-names">
+            <p class="ln-name"><span class="label">Business</span> <span class="ln-line">Create value.</span></p>
+            <p class="ln-name ln-name--right"><span class="label">System</span> <span class="ln-line">Create leverage.</span></p>
+          </div>
+
+          <div class="ln-draw" data-lens-draw>
+            <svg class="ln-svg" viewBox="0 0 100 92" aria-hidden="true" focusable="false">
+              <path class="ln-centre" d="M37 34.33A27 27 0 0 1 63 34.33A27 27 0 0 1 50 57.09A27 27 0 0 1 37 34.33Z"/>
+              <circle class="ln-ring ln-ring--b" cx="36" cy="34" r="27"/>
+              <circle class="ln-ring ln-ring--s" cx="64" cy="34" r="27"/>
+              <circle class="ln-ring ln-ring--p" cx="50" cy="58" r="27"/>
+            </svg>
+            <span class="ln-badge ln-badge--edge" style="--x:21;--y:27" aria-hidden="true">A</span>
+            <span class="ln-badge ln-badge--edge" style="--x:79;--y:27" aria-hidden="true">B</span>
+            <span class="ln-badge ln-badge--edge" style="--x:50;--y:74" aria-hidden="true">C</span>
+            <span class="ln-badge ln-badge--centre" style="--x:50;--y:42.5" aria-hidden="true">D</span>
+          </div>
+
+          <p class="ln-name ln-name--bottom"><span class="label">People</span> <span class="ln-line">Create capability.</span></p>
+        </div>
+
+        <div class="ln-key">
+          <ul class="ln-overlaps">
+            <li><svg class="glyph lens" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false"><use href="#lens-b"/><use href="#lens-s"/><use href="#lens-p"/><circle class="lens-dot" cx="8.1" cy="14.1" r="2" fill="currentColor"/></svg>Leadership</li>
+            <li><svg class="glyph lens" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false"><use href="#lens-b"/><use href="#lens-s"/><use href="#lens-p"/><circle class="lens-dot" cx="15.9" cy="14.1" r="2" fill="currentColor"/></svg>Capability</li>
+            <li><svg class="glyph lens" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false"><use href="#lens-b"/><use href="#lens-s"/><use href="#lens-p"/><circle class="lens-dot" cx="12" cy="5.6" r="2" fill="currentColor"/></svg>Scale</li>
+            <li><svg class="glyph lens" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false"><use href="#lens-b"/><use href="#lens-s"/><use href="#lens-p"/><circle class="lens-dot" cx="12" cy="11.4" r="2" fill="currentColor"/></svg>The Multiplier</li>
+          </ul>
+
+          <ol class="ln-answers">
+            <li class="ln-answer">
+              <span class="ln-answer-mark"><span class="ln-letter">A</span><svg class="glyph lens" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false"><use href="#lens-b"/><use href="#lens-s"/><use href="#lens-p"/><circle class="lens-dot" cx="5.5" cy="8" r="2" fill="currentColor"/></svg></span>
+              <span class="ln-answer-body">
+                <span class="ln-answer-text">Cut the claims team in half.</span>
+                <span class="label ln-where">Business alone</span>
+                <span class="ln-answer-note">Cheaper, and slower for the store.</span>
+              </span>
+            </li>
+            <li class="ln-answer">
+              <span class="ln-answer-mark"><span class="ln-letter">B</span><svg class="glyph lens" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false"><use href="#lens-b"/><use href="#lens-s"/><use href="#lens-p"/><circle class="lens-dot" cx="18.5" cy="8" r="2" fill="currentColor"/></svg></span>
+              <span class="ln-answer-body">
+                <span class="ln-answer-text">Build a claims portal.</span>
+                <span class="label ln-where">System alone</span>
+                <span class="ln-answer-note">Faster at something no store wanted to do.</span>
+              </span>
+            </li>
+            <li class="ln-answer">
+              <span class="ln-answer-mark"><span class="ln-letter">C</span><svg class="glyph lens" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false"><use href="#lens-b"/><use href="#lens-s"/><use href="#lens-p"/><circle class="lens-dot" cx="12" cy="18.6" r="2" fill="currentColor"/></svg></span>
+              <span class="ln-answer-body">
+                <span class="ln-answer-text">Train the phones in empathy.</span>
+                <span class="label ln-where">People alone</span>
+                <span class="ln-answer-note">Kinder words for the same answer.</span>
+              </span>
+            </li>
+            <li class="ln-answer ln-answer--centre">
+              <span class="ln-answer-mark"><span class="ln-letter">D</span><svg class="glyph lens" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false"><use href="#lens-b"/><use href="#lens-s"/><use href="#lens-p"/><circle class="lens-dot" cx="12" cy="11.4" r="2" fill="currentColor"/></svg></span>
+              <span class="ln-answer-body">
+                <span class="ln-answer-text">Let the driver replace it on the spot.</span>
+                <span class="label ln-where">All three</span>
+                <span class="ln-answer-note">The store, the flow of work and the driver all come out ahead.</span>
+              </span>
+            </li>
+          </ol>
+        </div>
+      </div>
+    </div>
+    <figcaption class="fig-cap">An illustration, not a measurement. Where an answer sits is a judgment, and another company could place the same answer somewhere else.</figcaption>
+  </figure>
+
+  <section class="chapter" aria-labelledby="s-names">
+    <div class="measure prose section-break">
+      <h2 class="h2" id="s-names">The overlaps have names</h2>
+      <p>Where the business meets people, there is leadership. A direction only matters when it changes what people actually do. Where people meet the system, there is capability. What people know becomes performance when the conditions let them use it. Where the system meets the business, there is scale. Results can be repeated without repeating the same problems.</p>
+      <p>And in the middle, where all three hold, something happens that none of them produces alone. The business defines the value. The system makes it repeatable. People bring it to life. Each makes the other two stronger. I call that the multiplier, and the rest of this book is about building it.</p>
+    </div>
+  </section>
+
+  <blockquote class="pull">
+    <p>The problems that matter most live where the lenses overlap.</p>
+  </blockquote>
+
+  <section class="chapter" aria-labelledby="s-three">
+    <div class="measure prose section-break">
+      <h2 class="h2" id="s-three">Look three times</h2>
+      <p>There is a habit that follows from this, and it is the most useful thing in the chapter. Before a change goes ahead, look at it three times. Once for what it does for the customer. Once for what it does to the way work flows. Once for what it asks of the people doing it. A change that is good in one and harmful in another is not finished yet.</p>
+      <p>Northfield’s three proposals each failed that test, and each would have been approved on its own. The driver’s version passed it, and was already running in one region with no approval at all. What it lacked was a way to become how Northfield worked, without depending on one manager. That is the next chapter.</p>
+    </div>
+  </section>
+
+  <section class="ponder" aria-labelledby="ponder-label">
+    <div class="ponder-inner">
+      <p class="label" id="ponder-label">Something to ponder</p>
+      <p class="ponder-1">The last change your company made was probably good for one of these three.</p>
+      <p class="ponder-2">It is worth knowing which one, and who paid for it in the other two.</p>
+    </div>
+  </section>
+
+  <section class="next" aria-labelledby="next-label">
+    <p class="label" id="next-label">Next</p>
+    <p class="next-text"><span class="next-num">Chapter six.</span> <span class="next-title">From Potential to Performance.</span></p>
+    <p class="label soon">Coming soon</p>
+  </section>
+
+</main>
+
+<footer class="foot" role="contentinfo">
+  <div class="foot-inner">
+    <nav id="contents" aria-label="Contents">
+      <p class="label">Contents</p>
+      <ol class="toc-list">
+        <li><a href="index.html"><span class="toc-num" aria-hidden="true"></span>Introduction</a></li>
+        <li><a href="chapter-one.html"><span class="toc-num">01</span>The Organization That Lost Its Way</a></li>
+        <li><a href="chapter-two.html"><span class="toc-num">02</span>Learning to See</a></li>
+        <li><a href="chapter-three.html"><span class="toc-num">03</span>The Seven Forces</a></li>
+        <li><a href="chapter-four.html"><span class="toc-num">04</span>The Hidden Cost of Complexity</a></li>
+        <li><a href="chapter-five.html" aria-current="page"><span class="toc-num">05</span>The Three Lenses</a></li>
+      </ol>
+    </nav>
+    <p class="label">Made by Matty</p>
+  </div>
+</footer>
+
+<script src="book.js" defer></script>
+
+<script>
+(function () {
+  "use strict";
+  var root = document.documentElement;
+  var box = document.querySelector("[data-lenses]");
+  var draw = box && box.querySelector("[data-lens-draw]");
+  var fig = document.getElementById("fig-6");
+  if (!box || !draw || !fig || !window.requestAnimationFrame) return;
+
+  var mq = window.matchMedia ? window.matchMedia("(prefers-reduced-motion: reduce)") : null;
+  if (mq && mq.matches) return;
+
+  /* progress through the drawing sets five stages: three rings in
+     turn, then the edge answers, then the middle and its answer */
+  var STAGES = [0.04, 0.16, 0.28, 0.44, 0.62];
+  var ticking = false;
+  var listening = false;
+  var io = null;
+
+  function update() {
+    ticking = false;
+    var vh = window.innerHeight || document.documentElement.clientHeight;
+    var r = draw.getBoundingClientRect();
+    if (!r.height) return;
+    var p = (vh * 0.85 - r.top) / (r.height + vh * 0.25);
+    for (var i = 0; i < STAGES.length; i++) {
+      box.classList.toggle("s" + (i + 1), p >= STAGES[i]);
+    }
+  }
+
+  function onScroll() {
+    if (!ticking) {
+      ticking = true;
+      window.requestAnimationFrame(update);
+    }
+  }
+
+  function listen(on) {
+    if (on === listening) return;
+    listening = on;
+    if (on) {
+      window.addEventListener("scroll", onScroll, { passive: true });
+      window.addEventListener("resize", onScroll);
+    } else {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+    }
+  }
+
+  function stopLive() {
+    listen(false);
+    if (io) io.disconnect();
+    root.classList.remove("lens-live");
+  }
+
+  try {
+    root.classList.add("lens-live");
+    update();
+  } catch (e) {
+    root.classList.remove("lens-live");
+    return;
+  }
+
+  if ("IntersectionObserver" in window) {
+    io = new IntersectionObserver(function (entries) {
+      for (var i = 0; i < entries.length; i++) listen(entries[i].isIntersecting);
+      onScroll();
+    }, { rootMargin: "50% 0px 50% 0px" });
+    io.observe(fig);
+  } else {
+    listen(true);
+  }
+
+  window.addEventListener("load", onScroll);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(onScroll);
+
+  if (mq) {
+    var onPref = function (e) { if (e.matches) stopLive(); };
+    if (mq.addEventListener) mq.addEventListener("change", onPref);
+    else if (mq.addListener) mq.addListener(onPref);
+  }
+})();
+</script>
+</body>
+</html>
