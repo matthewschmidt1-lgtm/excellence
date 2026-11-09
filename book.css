@@ -13,6 +13,13 @@
   --clay: #8A5638;
   --clay-halo: rgba(138, 86, 56, .16);
   --focus: #8A5638;
+  --moss: #596450;
+  /* the menu: a lit sheet over the page */
+  --panel: #FAF6EE;
+  --veil: rgba(243, 238, 228, .9);
+  --glow: rgba(214, 150, 92, .24);
+  --amber: #E3A45A;
+  --shadow: 0 1.5rem 3rem rgba(42, 38, 33, .16);
 
   /* type families */
   --font-serif: "Fraunces", "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
@@ -20,7 +27,9 @@
   --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
 
   /* type scale (phone first) */
+  --fs-micro: .6875rem;
   --fs-label: .75rem;
+  --fs-foot: .875rem;
   --fs-small: .9375rem;
   --fs-fig: 1.0625rem;
   --fs-body: 1.1875rem;
@@ -39,6 +48,7 @@
   --lh-snug: 1.3;
   --lh-tight: 1.04;
   --track-label: .14em;
+  --track-micro: .08em;
 
   /* space */
   --s-1: .25rem;
@@ -54,6 +64,8 @@
   --gutter: 1.375rem;
   --measure: 36rem;
   --wide: 62rem;
+  --head-h: 2.75rem;
+  --menu-w: 23rem;
 
   /* figure geometry */
   --line-w: 2px;
@@ -67,6 +79,7 @@
   --dur-fill: 360ms;
   --dur-settle: 600ms;
   --dur-pulse: 3600ms;
+  --dur-flicker: 2600ms;
   --ease: cubic-bezier(.22, .68, .2, 1);
   --ease-travel: cubic-bezier(.45, 0, .25, 1);
 }
@@ -90,8 +103,14 @@
   }
 }
 
+/* Night colours. They follow the device unless the reader has chosen
+   Daylight or Candlelight in the menu (data-theme on the root). */
+:root { color-scheme: light dark; }
+:root[data-theme="light"] { color-scheme: light; }
+:root[data-theme="candle"] { color-scheme: dark; }
+
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]) {
     --paper: #2B2722;
     --sand: #35302A;
     --ink: #EDE6D8;
@@ -101,7 +120,58 @@
     --clay: #D49C78;
     --clay-halo: rgba(212, 156, 120, .18);
     --focus: #E2B293;
+    --moss: #9DAE8C;
+    --panel: #332E28;
+    --veil: rgba(43, 39, 34, .9);
+    --glow: rgba(240, 180, 110, .17);
+    --amber: #F2C57C;
+    --shadow: 0 1.5rem 3rem rgba(0, 0, 0, .45);
   }
+}
+:root[data-theme="candle"] {
+  --paper: #2B2722;
+  --sand: #35302A;
+  --ink: #EDE6D8;
+  --muted: #A39A8A;
+  --hairline: rgba(237, 230, 216, .15);
+  --rule: rgba(237, 230, 216, .28);
+  --clay: #D49C78;
+  --clay-halo: rgba(212, 156, 120, .18);
+  --focus: #E2B293;
+  --moss: #9DAE8C;
+  --panel: #332E28;
+  --veil: rgba(43, 39, 34, .9);
+  --glow: rgba(240, 180, 110, .17);
+  --amber: #F2C57C;
+  --shadow: 0 1.5rem 3rem rgba(0, 0, 0, .45);
+}
+
+/* Stronger contrast, chosen in the menu. Same set of tokens in both. */
+:root[data-contrast="more"] {
+  --ink: #15120E;
+  --muted: #474037;
+  --hairline: rgba(42, 38, 33, .42);
+  --rule: rgba(42, 38, 33, .62);
+  --clay: #6B3E26;
+  --focus: #6B3E26;
+}
+@media (prefers-color-scheme: dark) {
+  :root[data-contrast="more"]:not([data-theme="light"]) {
+    --ink: #FFF9EC;
+    --muted: #D8CFBF;
+    --hairline: rgba(237, 230, 216, .4);
+    --rule: rgba(237, 230, 216, .6);
+    --clay: #EDBE9B;
+    --focus: #F3CDB0;
+  }
+}
+:root[data-theme="candle"][data-contrast="more"] {
+  --ink: #FFF9EC;
+  --muted: #D8CFBF;
+  --hairline: rgba(237, 230, 216, .4);
+  --rule: rgba(237, 230, 216, .6);
+  --clay: #EDBE9B;
+  --focus: #F3CDB0;
 }
 
 /* ============================================================
@@ -113,6 +183,7 @@ html {
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
   scroll-behavior: smooth;
+  scroll-padding-top: calc(var(--head-h) + var(--s-3));
 }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
@@ -149,7 +220,7 @@ a { color: inherit; }
   position: absolute;
   left: var(--gutter);
   top: var(--s-4);
-  z-index: 10;
+  z-index: 40;
   padding: var(--s-2) var(--s-4);
   background: var(--ink);
   color: var(--paper);
@@ -188,14 +259,14 @@ a { color: inherit; }
    Cover
    ============================================================ */
 .cover {
-  min-height: 100vh;
+  min-height: calc(100vh - var(--head-h));
   display: flex;
   flex-direction: column;
   padding: var(--s-6) var(--gutter) var(--s-5);
   text-align: center;
 }
 @supports (height: 1svh) {
-  .cover { min-height: 100svh; }
+  .cover { min-height: calc(100svh - var(--head-h)); }
 }
 
 .cover-eyebrow {
@@ -561,28 +632,290 @@ a { color: inherit; }
   text-decoration-color: var(--clay);
 }
 
+/* ============================================================
+   Footer: small, the contents and a signature
+   ============================================================ */
 .foot {
-  padding: var(--s-6) var(--gutter) var(--s-7);
+  padding: var(--s-6) var(--gutter) var(--s-6);
   border-top: 1px solid var(--hairline);
-  text-align: center;
+}
+.foot-inner {
+  max-width: var(--wide);
+  margin-inline: auto;
+  display: grid;
+  gap: var(--s-5);
+}
+@media (min-width: 48rem) {
+  .foot-inner {
+    grid-template-columns: 1fr auto;
+    align-items: end;
+  }
+}
+.foot .label,
+.menu .label {
+  font-size: var(--fs-micro);
+  letter-spacing: var(--track-micro);
+}
+
+.toc-list {
+  list-style: none;
+  display: grid;
+  gap: var(--s-1);
+  margin-top: var(--s-3);
+}
+.toc-list a {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--s-3);
+  padding: var(--s-1) 0;
+  font-family: var(--font-sans);
+  font-size: var(--fs-foot);
+  line-height: 1.45;
+  color: var(--muted);
+  text-decoration: none;
+  transition: color var(--dur-quick) var(--ease);
+}
+.toc-list a:hover { color: var(--clay); }
+.toc-list a[aria-current="page"] { color: var(--ink); }
+.toc-num {
+  flex: none;
+  width: 1.375rem;
+  font-family: var(--font-mono);
+  font-size: var(--fs-micro);
+  letter-spacing: var(--track-micro);
+  color: var(--clay);
 }
 
 /* ============================================================
-   Chapter pages: running head, opening, overheard speech
+   Header: small, always within reach
    ============================================================ */
 .running {
-  padding: var(--s-5) var(--gutter) 0;
-  text-align: center;
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-4);
+  min-height: var(--head-h);
+  padding: 0 var(--gutter);
+  background: var(--veil);
+  -webkit-backdrop-filter: saturate(160%) blur(14px);
+  backdrop-filter: saturate(160%) blur(14px);
+  border-bottom: 1px solid var(--hairline);
 }
-.running a {
-  display: inline-block;
-  padding: var(--s-2) var(--s-3);
+.running-link,
+.running-menu {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  margin: 0;
+  padding: var(--s-3) 0;
+  border: 0;
+  background: none;
+  font-family: var(--font-mono);
+  font-size: var(--fs-micro);
+  font-weight: 400;
+  letter-spacing: var(--track-micro);
+  line-height: 1.5;
+  text-transform: uppercase;
   text-decoration: none;
+  white-space: nowrap;
   color: var(--muted);
+  cursor: pointer;
   transition: color var(--dur-quick) var(--ease);
 }
-.running a:hover { color: var(--clay); }
+/* with the largest text on the narrowest phone the title gives way,
+   so the menu never leaves the screen */
+.running-link:first-child {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.running-menu,
+.running-contents { flex: none; }
+.running-link:hover,
+.running-menu:hover,
+.running-menu[aria-expanded="true"] { color: var(--clay); }
+@media (max-width: 22.4rem) {
+  :root {
+    --fs-micro: .65625rem;
+    --track-micro: .04em;
+  }
+}
 
+/* The menu: contents, then reading options, on a sheet with a
+   little candlelight at the top. Built by book.js; without it the
+   header link goes to the contents in the footer instead. */
+.menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  max-height: calc(100vh - var(--head-h));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: var(--s-5) var(--gutter) var(--s-6);
+  background: var(--panel);
+  border-bottom: 1px solid var(--hairline);
+  box-shadow: var(--shadow);
+}
+.menu[hidden] { display: none; }
+.menu::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 11rem;
+  background: radial-gradient(70% 100% at 50% 0%, var(--glow), transparent 72%);
+  pointer-events: none;
+}
+.menu > * { position: relative; }
+@media (min-width: 48rem) {
+  .menu {
+    left: auto;
+    right: var(--gutter);
+    top: calc(100% + var(--s-2));
+    width: var(--menu-w);
+    padding: var(--s-5) var(--s-5) var(--s-5);
+    border: 1px solid var(--hairline);
+    border-radius: 4px;
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .menu:not([hidden]) { animation: menu-in var(--dur-fill) var(--ease); }
+  .menu::before { animation: glow var(--dur-flicker) ease-in-out infinite alternate; }
+  .flame { animation: flicker var(--dur-flicker) ease-in-out infinite; }
+}
+@keyframes menu-in {
+  from { opacity: 0; transform: translateY(calc(var(--s-2) * -1)); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes glow {
+  from { opacity: .78; }
+  to { opacity: 1; }
+}
+@keyframes flicker {
+  0%, 100% { transform: scale(1, 1) rotate(0deg); }
+  22% { transform: scale(.96, 1.05) rotate(-2deg); }
+  48% { transform: scale(1.03, .97) rotate(1.5deg); }
+  71% { transform: scale(.98, 1.04) rotate(-1deg); }
+}
+
+.menu-sec + .menu-sec {
+  margin-top: var(--s-5);
+  padding-top: var(--s-5);
+  border-top: 1px solid var(--hairline);
+}
+.menu-title {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+}
+.menu-title .label { color: var(--ink); }
+.flame {
+  flex: none;
+  width: .875rem;
+  height: 1.25rem;
+  transform-origin: 50% 90%;
+}
+.flame-outer { fill: var(--clay); }
+.flame-core { fill: var(--amber); }
+.menu-note {
+  margin-top: var(--s-2);
+  font-family: var(--font-serif);
+  font-size: var(--fs-small);
+  font-style: italic;
+  line-height: 1.45;
+  color: var(--muted);
+}
+
+.opt { margin-top: var(--s-4); }
+.opt-name {
+  display: block;
+  margin-bottom: var(--s-2);
+  font-family: var(--font-sans);
+  font-size: var(--fs-foot);
+  line-height: 1.3;
+  color: var(--ink);
+}
+.opt-seg {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: var(--s-1);
+  padding: var(--s-1);
+  border: 1px solid var(--hairline);
+  border-radius: 999px;
+}
+.opt-btn {
+  min-height: 2.25rem;
+  margin: 0;
+  padding: 0 var(--s-2);
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: none;
+  font-family: var(--font-sans);
+  font-size: var(--fs-foot);
+  line-height: 1.2;
+  color: var(--muted);
+  cursor: pointer;
+  transition: color var(--dur-quick) var(--ease), background-color var(--dur-quick) var(--ease), border-color var(--dur-quick) var(--ease);
+}
+.opt-btn:hover { color: var(--ink); }
+.opt-btn[aria-pressed="true"] {
+  color: var(--ink);
+  background: var(--glow);
+  border-color: var(--clay);
+}
+.opt-btn[disabled] {
+  cursor: default;
+  opacity: .5;
+}
+.menu-reset {
+  margin: var(--s-5) 0 0;
+  padding: var(--s-2) 0;
+  border: 0;
+  background: none;
+  font-family: var(--font-mono);
+  font-size: var(--fs-micro);
+  letter-spacing: var(--track-micro);
+  text-transform: uppercase;
+  color: var(--muted);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: .3em;
+  text-decoration-color: var(--hairline);
+  cursor: pointer;
+}
+.menu-reset:hover { color: var(--clay); text-decoration-color: var(--clay); }
+
+/* ============================================================
+   Reading options, set from the menu (attributes on the root)
+   ============================================================ */
+:root[data-text="l"] { font-size: 112.5%; }
+:root[data-text="xl"] { font-size: 125%; }
+
+:root[data-spacing="roomy"] { --lh-body: 1.9; }
+:root[data-spacing="roomy"] body {
+  letter-spacing: .015em;
+  word-spacing: .08em;
+}
+:root[data-spacing="roomy"] .prose p + p { margin-top: 1.5em; }
+
+:root[data-motion="reduce"] { scroll-behavior: auto; }
+:root[data-motion="reduce"] *,
+:root[data-motion="reduce"] *::before,
+:root[data-motion="reduce"] *::after {
+  animation: none !important;
+  transition: none !important;
+}
+
+/* ============================================================
+   Chapter pages: opening, overheard speech
+   ============================================================ */
 .opening {
   padding: clamp(6rem, 22vh, 12rem) var(--gutter) 0;
 }

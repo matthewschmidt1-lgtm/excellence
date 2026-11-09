@@ -10,6 +10,10 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500&family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..500&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <link rel="stylesheet" href="book.css">
+<script>
+/* apply saved reading options before first paint; book.js does the rest */
+(function(){try{var p=JSON.parse(localStorage.getItem("aoe-prefs")||"{}"),r=document.documentElement,ok={text:/^(l|xl)$/,theme:/^(light|candle)$/,contrast:/^more$/,spacing:/^roomy$/,motion:/^reduce$/};for(var k in ok){if(typeof p[k]==="string"&&ok[k].test(p[k]))r.setAttribute("data-"+k,p[k])}}catch(e){}})();
+</script>
 <style>
 /* Fig. 1 only: One line to the customer */
 .parts {
@@ -182,7 +186,12 @@
 
 <a class="skip" href="#introduction">Skip to content</a>
 
-<header class="cover" role="banner">
+<header class="running" role="banner">
+  <a class="running-link" href="index.html">The Architecture of Excellence</a>
+  <a class="running-link running-contents" href="#contents">Contents</a>
+</header>
+
+<div class="cover">
   <p class="label cover-eyebrow">An exploration of organizations, people and performance</p>
   <div class="cover-main">
     <h1 class="cover-title">The Architecture <em>of Excellence</em></h1>
@@ -190,7 +199,7 @@
     <p class="label cover-by">Matthew Schmidt</p>
   </div>
   <a class="begin label" href="#introduction">Begin<span class="begin-line" aria-hidden="true"></span></a>
-</header>
+</div>
 
 <main id="main">
 
@@ -351,8 +360,20 @@
 </main>
 
 <footer class="foot" role="contentinfo">
-  <p class="label">Made by Matty</p>
+  <div class="foot-inner">
+    <nav id="contents" aria-label="Contents">
+      <p class="label">Contents</p>
+      <ol class="toc-list">
+        <li><a href="index.html" aria-current="page"><span class="toc-num" aria-hidden="true"></span>Introduction</a></li>
+        <li><a href="chapter-one.html"><span class="toc-num">01</span>The Organization That Lost Its Way</a></li>
+        <li><a href="chapter-two.html"><span class="toc-num">02</span>Learning to See</a></li>
+      </ol>
+    </nav>
+    <p class="label">Made by Matty</p>
+  </div>
 </footer>
+
+<script src="book.js" defer></script>
 
 <script>
 (function () {

@@ -9,6 +9,9 @@ Static pages, no build step:
 - `chapter-one.html` is Chapter one, The Organization That Lost Its Way.
 - `chapter-two.html` is Chapter two, Learning to See.
 - `book.css` holds the styles the pages share.
+- `book.js` builds the header Menu: the contents and the Accessibility options
+  (text size, light, contrast, spacing, motion). Choices are kept in the
+  reader's browser. Without it, the header link goes to the contents in the footer.
 
 ## Deploying on Railway
 
