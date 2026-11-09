@@ -10,6 +10,7 @@ Static pages, no build step:
 - `chapter-two.html` is Chapter two, Learning to See.
 - `chapter-three.html` is Chapter three, The Seven Forces. It introduces the
   seven force symbols, which later chapters reuse.
+- `chapter-four.html` is Chapter four, The Hidden Cost of Complexity.
 - `book.css` holds the styles the pages share.
 - `book.js` builds the header Menu: the contents and the Accessibility options
   (text size, light, contrast, spacing, motion). Choices are kept in the

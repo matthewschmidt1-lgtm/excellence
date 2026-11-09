@@ -1,0 +1,471 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Hidden Cost of Complexity | The Architecture of Excellence</title>
+<meta name="description" content="Chapter four of The Architecture of Excellence by Matthew Schmidt. Ines follows one forty-dollar case of iced tea through Northfield and prints the bill nobody sends: what a rule really costs, and the part that never gets counted.">
+<meta name="color-scheme" content="light dark">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500&family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..500&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="book.css">
+<script>
+/* apply saved reading options before first paint; book.js does the rest */
+(function(){try{var p=JSON.parse(localStorage.getItem("aoe-prefs")||"{}"),r=document.documentElement,ok={text:/^(l|xl)$/,theme:/^(light|candle)$/,contrast:/^more$/,spacing:/^roomy$/,motion:/^reduce$/};for(var k in ok){if(typeof p[k]==="string"&&ok[k].test(p[k]))r.setAttribute("data-"+k,p[k])}}catch(e){}})();
+</script>
+<style>
+/* ============================================================
+   Fig. 5 only: Two receipts
+   Two till receipts in Plex Mono on paper a shade lighter than
+   the page. The year-nine receipt tears off at its total; the
+   costs below the tear sit on no paper at all, only the dashed
+   outline of where the paper would have been.
+   ============================================================ */
+:root {
+  --receipt: #FCFAF5;
+  --receipt-shade: rgba(42, 38, 33, .14);
+  --receipt-w: 20rem;
+  --receipt-pad: 1.25rem;
+  --receipt-fs: .8125rem;
+  --receipt-total-fs: 1rem;
+  --tooth: .75rem;            /* width of one tooth on a torn edge */
+  --print-step: 70ms;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --receipt: #37322B;
+    --receipt-shade: rgba(0, 0, 0, .45);
+  }
+}
+:root[data-theme="candle"] {
+  --receipt: #37322B;
+  --receipt-shade: rgba(0, 0, 0, .45);
+}
+
+.receipts {
+  display: grid;
+  row-gap: var(--s-9);
+  justify-items: center;
+  padding-top: var(--s-8);
+}
+.receipt-col { width: 100%; max-width: var(--receipt-w); }
+
+/* the paper; the wrapper casts the shadow so the torn mask keeps it */
+.paper-shadow { filter: drop-shadow(0 .0625rem .1875rem var(--receipt-shade)); }
+.paper {
+  --mask: conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) 50% / var(--tooth) 100%;
+  padding: var(--s-6) var(--receipt-pad) calc(var(--s-5) + var(--tooth) / 2);
+  background: var(--receipt);
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: var(--receipt-fs);
+  line-height: 1.5;
+  -webkit-mask: var(--mask);
+  mask: var(--mask);
+}
+
+.rc-head {
+  text-align: center;
+  padding-bottom: var(--s-4);
+  margin-bottom: var(--s-4);
+  border-bottom: 1px dashed var(--rule);
+}
+.rc-brand {
+  font-weight: 500;
+  font-size: var(--receipt-total-fs);
+  letter-spacing: .24em;
+  text-transform: uppercase;
+}
+.rc-sub { margin-top: var(--s-1); color: var(--muted); }
+
+.rc-lines { list-style: none; margin: 0; padding: 0; }
+.rc-line {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  column-gap: var(--s-2);
+  align-items: end;
+  padding-block: .1875rem;
+}
+/* the name, then a dotted leader that runs on from its last word to
+   the price and is clipped at the column edge */
+.rc-name {
+  position: relative;
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+}
+.rc-name > span { overflow-wrap: anywhere; }
+.rc-name > span::after {
+  content: " . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .";
+  content: " . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ." / "";
+  position: absolute;
+  padding-left: .25rem;
+  white-space: nowrap;
+  color: var(--muted);
+}
+.rc-price {
+  text-align: right;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.rc-total {
+  margin-top: var(--s-3);
+  padding-top: var(--s-3);
+  border-top: 1px solid var(--ink);
+  font-size: var(--receipt-total-fs);
+  font-weight: 500;
+  letter-spacing: .04em;
+}
+.rc-total .rc-name > span::after { content: none; }
+
+.rc-foot {
+  margin-top: var(--s-5);
+  text-align: center;
+  color: var(--muted);
+}
+
+/* below the tear: no paper, only where the paper would have been */
+.tear {
+  position: relative;
+  margin-top: var(--s-4);
+  padding: var(--s-6) var(--receipt-pad) var(--s-5);
+  border: 1px dashed var(--rule);
+  border-top: 0;
+  font-family: var(--font-mono);
+  font-size: var(--receipt-fs);
+  line-height: 1.5;
+  color: var(--ink);
+}
+.tear::before {
+  /* the tear line: the same teeth as the edge above, in outline */
+  content: "";
+  position: absolute;
+  left: -1px;
+  right: -1px;
+  top: 0;
+  height: calc(var(--tooth) / 2);
+  background: var(--rule);
+  --zig: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 6' preserveAspectRatio='none'%3E%3Cpolyline points='0,5.4 6,.6 12,5.4' fill='none' stroke='%23000' stroke-width='1.1'/%3E%3C/svg%3E");
+  -webkit-mask: var(--zig) 0 0 / var(--tooth) 100% repeat-x;
+  mask: var(--zig) 0 0 / var(--tooth) 100% repeat-x;
+}
+.tear-label {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  transform: translate(-50%, -50%);
+  padding: 0 var(--s-3);
+  background: var(--paper);
+  color: var(--clay);
+  white-space: nowrap;
+}
+.tear .rc-name > span { font-style: normal; }
+.tear .rc-price {
+  font-family: var(--font-serif);
+  font-size: var(--fs-small);
+  font-style: italic;
+  color: var(--clay);
+  letter-spacing: 0;
+}
+.tear .rc-line + .rc-line { margin-top: var(--s-3); }
+
+/* wide: side by side; the short receipt stays in view */
+@media (min-width: 56rem) {
+  .receipts {
+    grid-template-columns: repeat(2, minmax(0, var(--receipt-w)));
+    justify-content: center;
+    column-gap: var(--s-8);
+    align-items: start;
+  }
+  .receipt-col--a { position: sticky; top: 14vh; }
+}
+
+/* Live state: added by JS only, removed by book.js for Still.
+   Lines print as the reader reaches them; nothing stays hidden
+   once it is in the top four fifths of the screen. */
+.receipt-live .rc-line,
+.receipt-live .rc-foot {
+  transition: opacity var(--dur-settle) var(--ease), transform var(--dur-settle) var(--ease);
+  transition-delay: calc(var(--i, 0) * var(--print-step));
+}
+.receipt-live .rc-line:not(.is-printed),
+.receipt-live .rc-foot:not(.is-printed) {
+  opacity: 0;
+  transform: translateY(calc(var(--s-2) * -1));
+}
+</style>
+</head>
+<body>
+
+<a class="skip" href="#chapter">Skip to content</a>
+
+<header class="running" role="banner">
+  <a class="running-link" href="index.html">The Architecture of Excellence</a>
+  <a class="running-link running-contents" href="#contents">Contents</a>
+</header>
+
+<main id="main">
+
+  <section class="opening" id="chapter" aria-labelledby="chapter-title" tabindex="-1">
+    <div class="measure">
+      <p class="label kicker">Chapter four</p>
+      <h1 class="opening-title" id="chapter-title">The Hidden Cost of Complexity</h1>
+      <p class="lede">Every rule is bought once and paid for every day after. Nobody sends the bill.</p>
+    </div>
+  </section>
+
+  <section class="chapter" aria-labelledby="s-counted">
+    <div class="measure prose section-break">
+      <h2 class="h2" id="s-counted">So she counted</h2>
+      <p>Ines had been told, politely, that her finding was interesting. She had not been told what would happen next. So she did the one thing an analyst can always do. She counted.</p>
+      <p>She started with a single claim. One case of iced tea, forty dollars, broken in the back of a truck. She followed it through Northfield and wrote down every minute anyone spent on it, and what that minute cost.</p>
+      <p>Then she did the same for a claim in year one, from the stories people still told about it.</p>
+    </div>
+  </section>
+
+  <figure class="fig" id="fig-5" aria-labelledby="fig5-title">
+    <div class="fig-inner">
+      <div class="fig-head">
+        <p class="label fig-num">Fig. 5</p>
+        <h3 class="fig-title" id="fig5-title">Two receipts</h3>
+        <p class="fig-sub">One broken case of iced tea, replaced in year one and in year nine.</p>
+      </div>
+
+      <div class="receipts" data-receipts>
+
+        <div class="receipt-col receipt-col--a">
+          <div class="paper-shadow">
+            <div class="paper">
+              <div class="rc-head">
+                <p class="rc-brand">Northfield</p>
+                <p class="rc-sub" id="ra-sub">Replacement, year one</p>
+              </div>
+              <ul class="rc-lines" aria-labelledby="ra-sub">
+                <li class="rc-line"><span class="rc-name"><span>One case of iced tea</span></span> <span class="rc-price">$40.00</span></li>
+                <li class="rc-line"><span class="rc-name"><span>Four minutes on the phone</span></span> <span class="rc-price">$2.00</span></li>
+                <li class="rc-line rc-total"><span class="rc-name"><span>Total</span></span> <span class="rc-price">$42.00</span></li>
+              </ul>
+              <p class="rc-foot">To the store: next truck.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="receipt-col receipt-col--b">
+          <div class="paper-shadow">
+            <div class="paper">
+              <div class="rc-head">
+                <p class="rc-brand">Northfield</p>
+                <p class="rc-sub" id="rb-sub">Replacement, year nine</p>
+              </div>
+              <ul class="rc-lines" aria-labelledby="rb-sub">
+                <li class="rc-line"><span class="rc-name"><span>One case of iced tea</span></span> <span class="rc-price">$40.00</span></li>
+                <li class="rc-line"><span class="rc-name"><span>First phone call</span></span> <span class="rc-price">$6.00</span></li>
+                <li class="rc-line"><span class="rc-name"><span>Finding and sending the form</span></span> <span class="rc-price">$4.00</span></li>
+                <li class="rc-line"><span class="rc-name"><span>Second call, form incomplete</span></span> <span class="rc-price">$5.00</span></li>
+                <li class="rc-line"><span class="rc-name"><span>Claims team review</span></span> <span class="rc-price">$12.50</span></li>
+                <li class="rc-line"><span class="rc-name"><span>Manager approval</span></span> <span class="rc-price">$6.00</span></li>
+                <li class="rc-line"><span class="rc-name"><span>Third call, checking status</span></span> <span class="rc-price">$4.00</span></li>
+                <li class="rc-line"><span class="rc-name"><span>Share of the monthly report</span></span> <span class="rc-price">$9.00</span></li>
+                <li class="rc-line"><span class="rc-name"><span>Share of the weekly meeting</span></span> <span class="rc-price">$14.00</span></li>
+                <li class="rc-line"><span class="rc-name"><span>Share of the claims system</span></span> <span class="rc-price">$11.50</span></li>
+                <li class="rc-line rc-total"><span class="rc-name"><span>Total</span></span> <span class="rc-price">$112.00</span></li>
+              </ul>
+              <p class="rc-foot">To the store: sixteen days.</p>
+            </div>
+          </div>
+
+          <div class="tear">
+            <p class="label tear-label" id="rb-tear">Not printed</p>
+            <ul class="rc-lines" aria-labelledby="rb-tear">
+              <li class="rc-line"><span class="rc-name"><span>The store manager’s forty-five minutes</span></span> <span class="rc-price">not counted</span></li>
+              <li class="rc-line"><span class="rc-name"><span>Sixteen days with a gap on the shelf</span></span> <span class="rc-price">not counted</span></li>
+              <li class="rc-line"><span class="rc-name"><span>The next broken case, never reported</span></span> <span class="rc-price">not counted</span></li>
+              <li class="rc-line"><span class="rc-name"><span>The shelf, given to someone else</span></span> <span class="rc-price">not counted</span></li>
+            </ul>
+          </div>
+        </div>
+
+      </div>
+    </div>
+    <figcaption class="fig-cap">An illustration, not a measurement. The prices are invented. The part below the tear is the part to look at.</figcaption>
+  </figure>
+
+  <section class="chapter" aria-labelledby="s-seventytwo">
+    <div class="measure prose section-break">
+      <h2 class="h2" id="s-seventytwo">Seventy-two dollars</h2>
+      <p>In year one, replacing a forty-dollar case cost Northfield forty-two dollars. In year nine it cost a hundred and twelve. Northfield was spending seventy-two dollars to decide whether to spend forty.</p>
+      <p>Nobody had ever seen that number, because it did not live anywhere. Six dollars sat in the call center’s budget. Twelve fifty sat with the claims team. The manager’s six minutes sat inside a salary. Each piece was small, reasonable and somebody else’s. Costs that are spread thin enough stop looking like costs. They look like people doing their jobs.</p>
+      <p>Then she multiplied it out. About two thousand claims a year, at seventy-two dollars each, is a hundred and forty-four thousand dollars a year. The rule had been written to stop false claims. Ines went back through three years of records and estimated, generously, that it stopped about four thousand dollars of them a year.</p>
+      <p>Northfield was spending a hundred and forty-four thousand dollars a year to save four.</p>
+    </div>
+  </section>
+
+  <blockquote class="pull">
+    <p>Costs that are spread thin enough stop looking like costs.</p>
+  </blockquote>
+
+  <section class="chapter" aria-labelledby="s-tear">
+    <div class="measure prose section-break">
+      <h2 class="h2" id="s-tear">Below the tear</h2>
+      <p>That was the part she could count. The bottom of the receipt is the part that never gets printed.</p>
+      <p>The store manager’s forty-five minutes belong to the store, so Northfield never sees them. The sixteen days with a gap on the shelf show up, eventually, as slightly lower sales, with nothing to say why. The broken case that is never reported does not show up at all. And the shelf that goes to someone else arrives in a quarterly review as “competitive pressure.”</p>
+      <p>This is why complexity is so hard to argue with. Its benefits are specific and its costs are everywhere. The rule can point to the fraud it stopped. The cost cannot point to anything.</p>
+    </div>
+  </section>
+
+  <section class="chapter" aria-labelledby="s-people">
+    <div class="measure prose section-break">
+      <h2 class="h2" id="s-people">What it does to people</h2>
+      <p>There is one more cost, and it is the one I mind most. The people on the phones at Northfield were hired because they were good with customers. By year nine the job was moving a form from one stage to the next. Nobody had taken their judgment away. There was simply nowhere left to use it.</p>
+      <p>People adapt to that. They stop noticing the things the system has no box for. The best of them leave, and the exit interview says “limited growth.”</p>
+    </div>
+  </section>
+
+  <section class="chapter" aria-labelledby="s-feeds">
+    <div class="measure prose section-break">
+      <h2 class="h2" id="s-feeds">It feeds itself</h2>
+      <p>Complexity also grows on its own. The form was sometimes filled in wrong, so there was a checklist for the form. Claims sometimes stalled, so there was a status report. The status report took time, so there was a coordinator. Each addition fixed a problem the last addition had made.</p>
+      <p>At some point a company crosses a line without noticing. More of its effort goes into running itself than into serving the customer. It is busy, it is skilled, and it has become very good at managing the consequences of its own decisions.</p>
+      <p>Activity is not progress. A company can work harder every year and deliver less.</p>
+    </div>
+  </section>
+
+  <section class="chapter" aria-labelledby="s-number">
+    <div class="measure prose section-break">
+      <h2 class="h2" id="s-number">What the number was for</h2>
+      <p>Ines did not bring this to a meeting as an accusation. The rule had been reasonable. The people running it were doing it well. What she brought was a receipt, and a receipt does not blame anyone. It only says what was paid.</p>
+      <p>That mattered, because of the forces in the last chapter. A number with nobody’s name on it was safe to say out loud. It put the customer back in the room. And it gave the people who were measured on replacement costs a much larger cost to be measured against.</p>
+      <p>It did not fix anything. A cost you can see is only a cost you can see. But for the first time in six years the rule had to be worth what it cost, and somebody had to say so. How to look at a company so that this becomes normal is the next chapter.</p>
+    </div>
+  </section>
+
+  <section class="ponder" aria-labelledby="ponder-label">
+    <div class="ponder-inner">
+      <p class="label" id="ponder-label">Something to ponder</p>
+      <p class="ponder-1">Somewhere in your company there is a rule that costs more than the thing it prevents.</p>
+      <p class="ponder-2">Nobody is hiding the number. Nobody has been asked to add it up.</p>
+    </div>
+  </section>
+
+  <section class="next" aria-labelledby="next-label">
+    <p class="label" id="next-label">Next</p>
+    <p class="next-text"><span class="next-num">Chapter five.</span> <span class="next-title">The Three Lenses.</span></p>
+    <p class="label soon">Coming soon</p>
+  </section>
+
+</main>
+
+<footer class="foot" role="contentinfo">
+  <div class="foot-inner">
+    <nav id="contents" aria-label="Contents">
+      <p class="label">Contents</p>
+      <ol class="toc-list">
+        <li><a href="index.html"><span class="toc-num" aria-hidden="true"></span>Introduction</a></li>
+        <li><a href="chapter-one.html"><span class="toc-num">01</span>The Organization That Lost Its Way</a></li>
+        <li><a href="chapter-two.html"><span class="toc-num">02</span>Learning to See</a></li>
+        <li><a href="chapter-three.html"><span class="toc-num">03</span>The Seven Forces</a></li>
+        <li><a href="chapter-four.html" aria-current="page"><span class="toc-num">04</span>The Hidden Cost of Complexity</a></li>
+      </ol>
+    </nav>
+    <p class="label">Made by Matty</p>
+  </div>
+</footer>
+
+<script src="book.js" defer></script>
+
+<script>
+(function () {
+  "use strict";
+  var root = document.documentElement;
+  var box = document.querySelector("[data-receipts]");
+  var fig = document.getElementById("fig-5");
+  if (!box || !fig || !window.requestAnimationFrame) return;
+
+  var mq = window.matchMedia ? window.matchMedia("(prefers-reduced-motion: reduce)") : null;
+  if (mq && mq.matches) return;
+
+  /* every line and foot, in reading order; each prints once, for good */
+  var items = Array.prototype.slice.call(box.querySelectorAll(".rc-line, .rc-foot"));
+  var ticking = false;
+  var listening = false;
+  var io = null;
+
+  function update() {
+    ticking = false;
+    var vh = window.innerHeight || document.documentElement.clientHeight;
+    var edge = vh * 0.8;
+    var left = 0;
+    for (var i = 0; i < items.length; i++) {
+      var it = items[i];
+      if (it.classList.contains("is-printed")) continue;
+      if (it.getBoundingClientRect().top < edge) {
+        /* lines that arrive together print one after another */
+        it.style.setProperty("--i", String(left++));
+        it.classList.add("is-printed");
+      }
+    }
+    if (left === 0) return;
+    for (var j = 0; j < items.length; j++) {
+      if (!items[j].classList.contains("is-printed")) return;
+    }
+    listen(false);
+    if (io) io.disconnect();
+  }
+
+  function onScroll() {
+    if (!ticking) {
+      ticking = true;
+      window.requestAnimationFrame(update);
+    }
+  }
+
+  function listen(on) {
+    if (on === listening) return;
+    listening = on;
+    if (on) {
+      window.addEventListener("scroll", onScroll, { passive: true });
+      window.addEventListener("resize", onScroll);
+    } else {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+    }
+  }
+
+  function stopLive() {
+    listen(false);
+    if (io) io.disconnect();
+    root.classList.remove("receipt-live");
+  }
+
+  try {
+    root.classList.add("receipt-live");
+    update();
+  } catch (e) {
+    root.classList.remove("receipt-live");
+    return;
+  }
+
+  if ("IntersectionObserver" in window) {
+    io = new IntersectionObserver(function (entries) {
+      for (var i = 0; i < entries.length; i++) listen(entries[i].isIntersecting);
+      onScroll();
+    }, { rootMargin: "50% 0px 50% 0px" });
+    io.observe(fig);
+  } else {
+    listen(true);
+  }
+
+  window.addEventListener("load", onScroll);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(onScroll);
+
+  if (mq) {
+    var onPref = function (e) { if (e.matches) stopLive(); };
+    if (mq.addEventListener) mq.addEventListener("change", onPref);
+    else if (mq.addListener) mq.addListener(onPref);
+  }
+})();
+</script>
+</body>
+</html>
