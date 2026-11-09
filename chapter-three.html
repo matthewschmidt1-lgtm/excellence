@@ -1,0 +1,585 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Seven Forces | The Architecture of Excellence</title>
+<meta name="description" content="Chapter three of The Architecture of Excellence by Matthew Schmidt. Seven forces decide what a company does with the truth, and a company gets the result of its weakest one, not its strongest.">
+<meta name="color-scheme" content="light dark">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500&family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..500&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="book.css">
+<script>
+/* apply saved reading options before first paint; book.js does the rest */
+(function(){try{var p=JSON.parse(localStorage.getItem("aoe-prefs")||"{}"),r=document.documentElement,ok={text:/^(l|xl)$/,theme:/^(light|candle)$/,contrast:/^more$/,spacing:/^roomy$/,motion:/^reduce$/};for(var k in ok){if(typeof p[k]==="string"&&ok[k].test(p[k]))r.setAttribute("data-"+k,p[k])}}catch(e){}})();
+</script>
+<style>
+/* ============================================================
+   The seven entries: prose with marginal furniture
+   ============================================================ */
+.entries {
+  list-style: none;
+  margin: var(--s-8) 0 0;
+  padding: 0;
+}
+.entry {
+  position: relative;
+  padding-top: var(--s-6);
+  border-top: 1px solid var(--hairline);
+}
+.entry + .entry { margin-top: var(--s-8); }
+.entry-mark {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  color: var(--clay);
+}
+.entry-num {
+  font-family: var(--font-mono);
+  font-size: var(--fs-label);
+  letter-spacing: var(--track-label);
+  color: var(--muted);
+}
+.entry-name {
+  margin-top: var(--s-4);
+  font-size: var(--fs-h3);
+  font-weight: 380;
+  line-height: 1.15;
+}
+.entry-verb {
+  margin-top: var(--s-2);
+  font-family: var(--font-sans);
+  font-size: var(--fs-small);
+  line-height: 1.5;
+  color: var(--muted);
+}
+.prose .entry-verb + p { margin-top: var(--s-5); }
+/* wide screens: the symbol and numeral hang in the margin */
+@media (min-width: 64rem) {
+  .entry-mark {
+    position: absolute;
+    top: var(--s-6);
+    right: calc(100% + var(--s-6));
+    flex-direction: column;
+    align-items: flex-end;
+    gap: var(--s-2);
+  }
+  .entry-name { margin-top: 0; }
+}
+
+/* ============================================================
+   Fig. 4 only: Seven forces, one level
+   Each bar is as long as the force is strong. One line drops at
+   the end of the shortest. Left of it is what the company gets;
+   right of it is hatched: what it has and cannot use.
+   ============================================================ */
+:root {
+  --lv-label: 7.25rem;   /* the name column */
+  --lv-gap: var(--s-3);
+  --lv-bar: .75rem;      /* bar thickness */
+  --lv-row: 3.25rem;     /* row height */
+  --lv-hatch: .1875rem;
+}
+@media (min-width: 48rem) {
+  :root { --lv-label: 11rem; --lv-gap: var(--s-5); --lv-bar: .875rem; }
+}
+
+.lv {
+  container: lv / inline-size;
+  position: relative;
+  max-width: 42rem;
+  margin: 0 auto;
+  padding-top: var(--s-8);
+}
+.lv-band {
+  display: grid;
+  grid-template-columns: var(--lv-label) minmax(0, 1fr);
+  column-gap: var(--lv-gap);
+}
+.lv-cell { position: relative; }
+
+/* top: a bracket over the stranded part */
+.lv-bracket {
+  position: relative;
+  margin-left: calc(var(--level) * 1%);
+  width: calc((var(--most) - var(--level)) * 1%);
+  min-width: 7rem;
+  padding-bottom: var(--s-3);
+  text-align: right;
+  transition: color var(--dur-settle) var(--ease);
+}
+.lv-bracket .label { display: block; color: var(--muted); text-wrap: balance; }
+.lv-bracket::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: var(--s-2);
+  border: 1px solid var(--muted);
+  border-bottom: 0;
+}
+
+.lv-body {
+  --track-x: calc(var(--lv-label) + var(--lv-gap));
+  position: relative;
+  margin-top: var(--s-4);
+}
+.lv-rows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.lv-row {
+  min-height: var(--lv-row);
+  align-items: center;
+  padding-block: var(--s-2);
+}
+.lv-name {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  min-width: 0;
+  color: var(--ink);
+}
+.lv-name .glyph { color: var(--clay); }
+.lv-words { display: flex; flex-direction: column; min-width: 0; line-height: 1.2; }
+.lv-num {
+  font-family: var(--font-mono);
+  font-size: var(--fs-micro);
+  letter-spacing: var(--track-micro);
+  color: var(--muted);
+}
+.lv-word {
+  font-family: var(--font-sans);
+  font-size: var(--fs-small);
+  overflow-wrap: anywhere;
+}
+@media (min-width: 48rem) {
+  .lv-words { flex-direction: row; align-items: baseline; gap: var(--s-3); }
+}
+
+.lv-track { display: flex; align-items: center; min-height: var(--lv-bar); }
+.lv-bar {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  display: flex;
+  width: calc(var(--len) * 1%);
+  height: var(--lv-bar);
+  margin-top: calc(var(--lv-bar) / -2);
+  transform-origin: left center;
+  transition: transform var(--dur-fill) var(--ease);
+}
+.lv-got {
+  flex: none;
+  width: calc(var(--level) / var(--len) * 100%);
+  background: var(--clay);
+}
+.lv-spare {
+  flex: 1;
+  border: 1px solid var(--muted);
+  border-left: 0;
+  background: repeating-linear-gradient(-45deg, var(--muted) 0 1px, transparent 1px var(--lv-hatch));
+  opacity: .9;
+  transition: background-color var(--dur-settle) var(--ease), border-color var(--dur-settle) var(--ease), opacity var(--dur-settle) var(--ease);
+}
+.lv-mark {
+  position: relative;
+  z-index: 2;
+  margin-left: calc(var(--level) * 1% + var(--s-4));
+  padding: .3125rem .5rem .25rem;
+  font-size: var(--fs-micro);
+  letter-spacing: var(--track-micro);
+  line-height: 1.3;
+  text-wrap: balance;
+}
+.lv-row--min .lv-word { color: var(--clay); }
+
+/* the level: one line through all seven */
+.lv-line {
+  position: absolute;
+  z-index: 1;
+  top: calc(var(--s-4) * -1);
+  bottom: calc(var(--s-5) * -1);
+  left: calc(var(--track-x) + (100% - var(--track-x)) * var(--level) / 100);
+  width: var(--line-w);
+  margin-left: calc(var(--line-w) / -2);
+  background: var(--ink);
+  transform-origin: top;
+  transition: transform var(--dur-fill) var(--ease);
+}
+.lv-gets {
+  padding-top: var(--s-6);
+  padding-left: calc(var(--level) * 1%);
+  transition: color var(--dur-settle) var(--ease);
+}
+.lv-gets .label {
+  display: block;
+  padding-left: var(--s-3);
+  color: var(--ink);
+  text-wrap: balance;
+}
+
+/* Narrow, or large text on a phone: the name sits above its bar and
+   the bar gets the full width. The line passes behind the names. */
+@container lv (max-width: 17rem) {
+  .lv-band { grid-template-columns: minmax(0, 1fr); row-gap: var(--s-2); }
+  .lv-band > span[aria-hidden="true"]:first-child { display: none; }
+  .lv-body { --track-x: 0rem; }
+  .lv-row { padding-block: var(--s-3); }
+  .lv-name {
+    position: relative;
+    z-index: 2;
+    justify-self: start;
+    padding-right: var(--s-3);
+    background: var(--paper);
+  }
+}
+
+/* Live state: only added by JS, removed by book.js for Still.
+   The bars draw out, the line drops, the excess goes hollow. */
+.forces-live .lv-bar { transform: scaleX(var(--grow, 0)); }
+.forces-live .lv-line { transform: scaleY(var(--drop, 0)); }
+.forces-live .lv:not(.is-stranded) .lv-spare {
+  background: var(--clay);
+  border-color: var(--clay);
+  opacity: 1;
+}
+.forces-live .lv:not(.is-stranded) .lv-bracket .label,
+.forces-live .lv:not(.is-stranded) .lv-mark { color: var(--muted); border-color: var(--rule); }
+.forces-live .lv:not(.is-stranded) .lv-bracket::after { border-color: var(--rule); }
+.forces-live .lv:not(.is-dropped) .lv-gets .label { color: var(--muted); }
+</style>
+</head>
+<body>
+
+<svg class="sprite" aria-hidden="true" focusable="false">
+  <!-- 01 Awareness: an eye, almond and pupil -->
+  <symbol id="f-awareness" viewBox="0 0 24 24">
+    <path fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" d="M2.75 12C5.4 7.6 8.5 5.5 12 5.5s6.6 2.1 9.25 6.5C18.6 16.4 15.5 18.5 12 18.5S5.4 16.4 2.75 12Z"/>
+    <circle class="dot" fill="currentColor" cx="12" cy="12" r="2.4"/>
+  </symbol>
+  <!-- 02 Trust: two rings, linked -->
+  <symbol id="f-trust" viewBox="0 0 24 24">
+    <circle fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" cx="8.75" cy="12" r="5.25"/>
+    <circle fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" cx="15.25" cy="12" r="5.25"/>
+  </symbol>
+  <!-- 03 Conditions: a frame standing on ground, the work inside it -->
+  <symbol id="f-conditions" viewBox="0 0 24 24">
+    <path fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" d="M3 19.5h18"/>
+    <path fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" d="M6.5 19.5V7.5h11v12"/>
+    <circle class="dot" fill="currentColor" cx="12" cy="15.25" r="1.75"/>
+  </symbol>
+  <!-- 04 Value: the work, a line, and the customer's open ring -->
+  <symbol id="f-value" viewBox="0 0 24 24">
+    <circle class="dot" fill="currentColor" cx="12" cy="3.75" r="1.75"/>
+    <path fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" d="M12 6.75v8.25"/>
+    <circle fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" cx="12" cy="18.25" r="3.25"/>
+  </symbol>
+  <!-- 05 Incentives: a slope with a direction on it -->
+  <symbol id="f-incentives" viewBox="0 0 24 24">
+    <path fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" d="M3.5 19.5 19.25 6.5"/>
+    <path fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" d="M12.75 6.25h6.5v6.5"/>
+  </symbol>
+  <!-- 06 Leverage: a beam on a fulcrum, a load raised on the short end -->
+  <symbol id="f-leverage" viewBox="0 0 24 24">
+    <path fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" d="M2.75 16.75 21.25 9.5"/>
+    <path fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" d="M15.5 11.75 18.75 19.5h-6.5Z"/>
+    <circle class="dot" fill="currentColor" cx="19.75" cy="7.75" r="1.75"/>
+  </symbol>
+  <!-- 07 Excellence: a spirit level, the bubble held between its marks -->
+  <symbol id="f-excellence" viewBox="0 0 24 24">
+    <rect fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" x="2.75" y="8" width="18.5" height="8" rx="4"/>
+    <path fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" d="M9.25 10.25v3.5M14.75 10.25v3.5"/>
+    <circle class="dot" fill="currentColor" cx="12" cy="12" r="1.6"/>
+  </symbol>
+</svg>
+
+<a class="skip" href="#chapter">Skip to content</a>
+
+<header class="running" role="banner">
+  <a class="running-link" href="index.html">The Architecture of Excellence</a>
+  <a class="running-link running-contents" href="#contents">Contents</a>
+</header>
+
+<main id="main">
+
+  <section class="opening" id="chapter" aria-labelledby="chapter-title" tabindex="-1">
+    <div class="measure">
+      <p class="label kicker">Chapter three</p>
+      <h1 class="opening-title" id="chapter-title">The Seven Forces</h1>
+      <p class="lede">Ines had seen the problem. What happened next had almost nothing to do with her, and everything to do with the company around her.</p>
+    </div>
+  </section>
+
+  <section class="chapter" aria-labelledby="s-photos">
+    <div class="measure prose section-break">
+      <h2 class="h2" id="s-photos">What happened to the photographs</h2>
+      <p>Ines put her findings in front of her manager on a Tuesday. Eleven unclaimed cases. Fourteen stores. One sentence from a store manager, written down word for word.</p>
+      <p>Nothing dramatic happened. Nobody shouted and nobody buried it. Over the next six weeks it was received, appreciated, discussed, scheduled and, in the end, not acted on.</p>
+      <p>I have watched that happen to good findings for twenty years, and for a long time I blamed the finding. Not clear enough, not enough data, wrong slide order. It is rarely the finding. A company’s response to the truth is decided by a small number of forces that were in place long before the truth showed up.</p>
+      <p>I count seven. Here is each one, at Northfield.</p>
+
+      <ol class="entries">
+        <li class="entry">
+          <div class="entry-mark" aria-hidden="true"><svg class="glyph glyph--lg" width="32" height="32"><use href="#f-awareness"/></svg><span class="entry-num">01</span></div>
+          <h3 class="entry-name">Awareness.</h3>
+          <p class="entry-verb">Seeing what is actually happening.</p>
+          <p>This was the one Northfield now had, because one person got on a truck. It is where everything starts, and on its own it changes nothing.</p>
+        </li>
+        <li class="entry">
+          <div class="entry-mark" aria-hidden="true"><svg class="glyph glyph--lg" width="32" height="32"><use href="#f-trust"/></svg><span class="entry-num">02</span></div>
+          <h3 class="entry-name">Trust.</h3>
+          <p class="entry-verb">Making it safe to say so.</p>
+          <p>Ines’s manager read the store manager’s sentence twice and then asked, kindly, whether it needed to be in the deck. The last person to question the 91 percent had been asked to take it offline. It never came back online.</p>
+        </li>
+        <li class="entry">
+          <div class="entry-mark" aria-hidden="true"><svg class="glyph glyph--lg" width="32" height="32"><use href="#f-conditions"/></svg><span class="entry-num">03</span></div>
+          <h3 class="entry-name">Conditions.</h3>
+          <p class="entry-verb">Making good work possible.</p>
+          <p>The people on the phones wanted to help the store. Their screen had no button for it. Without an approved form the system would not issue a replacement, so willingness had nowhere to go.</p>
+        </li>
+        <li class="entry">
+          <div class="entry-mark" aria-hidden="true"><svg class="glyph glyph--lg" width="32" height="32"><use href="#f-value"/></svg><span class="entry-num">04</span></div>
+          <h3 class="entry-name">Value.</h3>
+          <p class="entry-verb">Keeping the customer in the room.</p>
+          <p>When the finding reached the leadership meeting it was the ninth item of nine. The first eight were about budgets, headcount and a reorganization. The customer is not in the meeting until someone brings them in, and item nine got four minutes.</p>
+        </li>
+        <li class="entry">
+          <div class="entry-mark" aria-hidden="true"><svg class="glyph glyph--lg" width="32" height="32"><use href="#f-incentives"/></svg><span class="entry-num">05</span></div>
+          <h3 class="entry-name">Incentives.</h3>
+          <p class="entry-verb">Rewarding what you say you want.</p>
+          <p>Northfield said fix it today. It paid the claims team for closing claims within ten days and the approving manager for keeping replacement costs down. People heard both messages and believed the one with money attached.</p>
+        </li>
+        <li class="entry">
+          <div class="entry-mark" aria-hidden="true"><svg class="glyph glyph--lg" width="32" height="32"><use href="#f-leverage"/></svg><span class="entry-num">06</span></div>
+          <h3 class="entry-name">Leverage.</h3>
+          <p class="entry-verb">Making an improvement last without a hero.</p>
+          <p>One regional manager had quietly solved all of this. Her drivers replaced broken cases on the spot, out of a budget she defended every quarter. Her stores were the happiest in the company. It worked because of her, which means it stopped when she went on holiday.</p>
+        </li>
+        <li class="entry">
+          <div class="entry-mark" aria-hidden="true"><svg class="glyph glyph--lg" width="32" height="32"><use href="#f-excellence"/></svg><span class="entry-num">07</span></div>
+          <h3 class="entry-name">Excellence.</h3>
+          <p class="entry-verb">Holding the standard when nobody is checking.</p>
+          <p>The standard had once been today. Nobody could say when it became ten days, and nobody was holding either number against what a store needed. A standard that only moves in one direction is not a standard. It is a record of what the company has put up with.</p>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="chapter" aria-labelledby="s-multiply">
+    <div class="measure prose section-break">
+      <h2 class="h2" id="s-multiply">They multiply</h2>
+      <p>It is tempting to read that as a list of seven problems. It is one problem. The forces are not separate. Each one sets the ceiling for the others.</p>
+      <p>Seeing, without trust, becomes a secret. Without conditions it becomes frustration. Without value it becomes activity. Without incentives it becomes a contradiction. Without leverage it becomes one person’s heroics. Without excellence it becomes a thing everyone knows and nobody expects to change.</p>
+      <p>That is why strength in one place does not make up for absence in another. Northfield had excellent awareness by the end of the last chapter. It got the result of its weakest force, not its strongest.</p>
+    </div>
+  </section>
+
+  <figure class="fig" id="fig-4" aria-labelledby="fig4-title">
+    <div class="fig-inner">
+      <div class="fig-head">
+        <p class="label fig-num">Fig. 4</p>
+        <h3 class="fig-title" id="fig4-title">Seven forces, one level</h3>
+        <p class="fig-sub">Northfield in year nine.</p>
+      </div>
+
+      <div class="lv" style="--level:24;--most:88" data-lv>
+        <div class="lv-band lv-top">
+          <span aria-hidden="true"></span>
+          <div class="lv-cell"><div class="lv-bracket"><span class="label">What it has and cannot use</span></div></div>
+        </div>
+
+        <div class="lv-body" data-lv-rows>
+        <ol class="lv-rows">
+          <li class="lv-band lv-row" style="--len:88">
+            <span class="lv-name"><svg class="glyph" width="20" height="20" aria-hidden="true"><use href="#f-awareness"/></svg><span class="lv-words"><span class="lv-num">01</span><span class="lv-word">Awareness</span></span></span>
+            <span class="lv-cell lv-track"><span class="lv-bar" aria-hidden="true"><span class="lv-got"></span><span class="lv-spare"></span></span></span>
+          </li>
+          <li class="lv-band lv-row" style="--len:46">
+            <span class="lv-name"><svg class="glyph" width="20" height="20" aria-hidden="true"><use href="#f-trust"/></svg><span class="lv-words"><span class="lv-num">02</span><span class="lv-word">Trust</span></span></span>
+            <span class="lv-cell lv-track"><span class="lv-bar" aria-hidden="true"><span class="lv-got"></span><span class="lv-spare"></span></span></span>
+          </li>
+          <li class="lv-band lv-row" style="--len:58">
+            <span class="lv-name"><svg class="glyph" width="20" height="20" aria-hidden="true"><use href="#f-conditions"/></svg><span class="lv-words"><span class="lv-num">03</span><span class="lv-word">Conditions</span></span></span>
+            <span class="lv-cell lv-track"><span class="lv-bar" aria-hidden="true"><span class="lv-got"></span><span class="lv-spare"></span></span></span>
+          </li>
+          <li class="lv-band lv-row" style="--len:52">
+            <span class="lv-name"><svg class="glyph" width="20" height="20" aria-hidden="true"><use href="#f-value"/></svg><span class="lv-words"><span class="lv-num">04</span><span class="lv-word">Value</span></span></span>
+            <span class="lv-cell lv-track"><span class="lv-bar" aria-hidden="true"><span class="lv-got"></span><span class="lv-spare"></span></span></span>
+          </li>
+          <li class="lv-band lv-row lv-row--min" style="--len:24">
+            <span class="lv-name"><svg class="glyph" width="20" height="20" aria-hidden="true"><use href="#f-incentives"/></svg><span class="lv-words"><span class="lv-num">05</span><span class="lv-word">Incentives</span></span></span>
+            <span class="lv-cell lv-track"><span class="lv-bar" aria-hidden="true"><span class="lv-got"></span></span><span class="tag lv-mark">The one holding the rest</span></span>
+          </li>
+          <li class="lv-band lv-row" style="--len:38">
+            <span class="lv-name"><svg class="glyph" width="20" height="20" aria-hidden="true"><use href="#f-leverage"/></svg><span class="lv-words"><span class="lv-num">06</span><span class="lv-word">Leverage</span></span></span>
+            <span class="lv-cell lv-track"><span class="lv-bar" aria-hidden="true"><span class="lv-got"></span><span class="lv-spare"></span></span></span>
+          </li>
+          <li class="lv-band lv-row" style="--len:44">
+            <span class="lv-name"><svg class="glyph" width="20" height="20" aria-hidden="true"><use href="#f-excellence"/></svg><span class="lv-words"><span class="lv-num">07</span><span class="lv-word">Excellence</span></span></span>
+            <span class="lv-cell lv-track"><span class="lv-bar" aria-hidden="true"><span class="lv-got"></span><span class="lv-spare"></span></span></span>
+          </li>
+        </ol>
+        <span class="lv-line" aria-hidden="true"></span>
+        </div>
+
+        <div class="lv-band">
+          <span aria-hidden="true"></span>
+          <div class="lv-cell lv-gets"><span class="label">What Northfield gets</span></div>
+        </div>
+      </div>
+    </div>
+    <figcaption class="fig-cap">An illustration, not a measurement. The lengths are invented. The line is drawn at the shortest one, and that is the point.</figcaption>
+  </figure>
+
+  <section class="chapter" aria-labelledby="s-holding">
+    <div class="measure prose section-break">
+      <h2 class="h2" id="s-holding">The one holding the rest</h2>
+      <p>Look at what is beyond the line. Northfield was not short of talent, or data, or people who cared. It had all of that and could not use it. Most of what a struggling company needs, it already has. It is stranded above the level of its weakest force.</p>
+      <p>This is not my idea. Eliyahu Goldratt built a whole way of running factories on it: find the one constraint, and work on that. Polishing what is already strong feels like progress and changes nothing downstream.</p>
+      <p>It also explains something that puzzled me for years. The same finding, put to two companies, produces two different outcomes. Nothing about the finding is different. What is different is everything around it.</p>
+    </div>
+  </section>
+
+  <blockquote class="pull">
+    <p>A company gets the result of its weakest force, not its strongest.</p>
+  </blockquote>
+
+  <section class="chapter" aria-labelledby="s-point">
+    <div class="measure prose section-break">
+      <h2 class="h2" id="s-point">Whichever way they point</h2>
+      <p>The forces are also not still. They are things a company does, every day, and they compound in whichever direction they point.</p>
+      <p>When a person tells the truth and it goes badly, trust drops, so the next person says less, so awareness drops, so the standard slips a little further. Nobody chose that. It ran downhill by itself.</p>
+      <p>It runs the other way just as reliably. Someone says an awkward thing and is thanked. The next awkward thing arrives sooner. A fix gets built into the system, so it holds, so people believe the next fix is worth proposing. That is all culture is. It is what everyday decisions and consequences reinforce.</p>
+      <p>So the useful thing to know about a company is not how strong each force is today. It is which one is holding the rest, and which way it is moving.</p>
+      <p>Northfield’s was incentives. It said one thing and paid for another, and until that changed, nothing Ines found could travel very far. Before anyone would change it, someone had to be able to say what it was costing. That is the next chapter.</p>
+    </div>
+  </section>
+
+  <section class="ponder" aria-labelledby="ponder-label">
+    <div class="ponder-inner">
+      <p class="label" id="ponder-label">Something to ponder</p>
+      <p class="ponder-1">Somewhere in your company there is a person quietly making something work that the system does not.</p>
+      <p class="ponder-2">Notice who it is. Then notice what happens when they take a week off.</p>
+    </div>
+  </section>
+
+  <section class="next" aria-labelledby="next-label">
+    <p class="label" id="next-label">Next</p>
+    <p class="next-text"><span class="next-num">Chapter four.</span> <span class="next-title">The Hidden Cost of Complexity.</span></p>
+    <p class="label soon">Coming soon</p>
+  </section>
+
+</main>
+
+<footer class="foot" role="contentinfo">
+  <div class="foot-inner">
+    <nav id="contents" aria-label="Contents">
+      <p class="label">Contents</p>
+      <ol class="toc-list">
+        <li><a href="index.html"><span class="toc-num" aria-hidden="true"></span>Introduction</a></li>
+        <li><a href="chapter-one.html"><span class="toc-num">01</span>The Organization That Lost Its Way</a></li>
+        <li><a href="chapter-two.html"><span class="toc-num">02</span>Learning to See</a></li>
+        <li><a href="chapter-three.html" aria-current="page"><span class="toc-num">03</span>The Seven Forces</a></li>
+      </ol>
+    </nav>
+    <p class="label">Made by Matty</p>
+  </div>
+</footer>
+
+<script src="book.js" defer></script>
+
+<script>
+(function () {
+  "use strict";
+  var root = document.documentElement;
+  var lv = document.querySelector("[data-lv]");
+  var rows = lv && lv.querySelector("[data-lv-rows]");
+  var fig = document.getElementById("fig-4");
+  if (!lv || !rows || !fig || !window.requestAnimationFrame) return;
+
+  var mq = window.matchMedia ? window.matchMedia("(prefers-reduced-motion: reduce)") : null;
+  if (mq && mq.matches) return;
+
+  var ticking = false;
+  var listening = false;
+  var io = null;
+
+  function clamp(v) { return v < 0 ? 0 : (v > 1 ? 1 : v); }
+
+  /* one progress value across the rows: the bars draw out over the
+     first half, the line drops over the next part, then the excess
+     beyond the line goes hollow */
+  function update() {
+    ticking = false;
+    var vh = window.innerHeight || document.documentElement.clientHeight;
+    var r = rows.getBoundingClientRect();
+    var start = vh * 0.85;
+    var span = r.height + vh * 0.35;
+    var p = clamp((start - r.top) / span);
+    var grow = clamp(p / 0.4);
+    var drop = clamp((p - 0.45) / 0.2);
+    lv.style.setProperty("--grow", grow.toFixed(4));
+    lv.style.setProperty("--drop", drop.toFixed(4));
+    lv.classList.toggle("is-dropped", drop >= 1);
+    lv.classList.toggle("is-stranded", p >= 0.7);
+  }
+
+  function onScroll() {
+    if (!ticking) {
+      ticking = true;
+      window.requestAnimationFrame(update);
+    }
+  }
+
+  function listen(on) {
+    if (on === listening) return;
+    listening = on;
+    if (on) {
+      window.addEventListener("scroll", onScroll, { passive: true });
+      window.addEventListener("resize", onScroll);
+    } else {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+    }
+  }
+
+  function stopLive() {
+    listen(false);
+    if (io) io.disconnect();
+    root.classList.remove("forces-live");
+  }
+
+  try {
+    root.classList.add("forces-live");
+    update();
+  } catch (e) {
+    root.classList.remove("forces-live");
+    return;
+  }
+
+  if ("IntersectionObserver" in window) {
+    io = new IntersectionObserver(function (entries) {
+      for (var i = 0; i < entries.length; i++) listen(entries[i].isIntersecting);
+      onScroll();
+    }, { rootMargin: "50% 0px 50% 0px" });
+    io.observe(fig);
+  } else {
+    listen(true);
+  }
+
+  window.addEventListener("load", onScroll);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(onScroll);
+
+  if (mq) {
+    var onPref = function (e) { if (e.matches) stopLive(); };
+    if (mq.addEventListener) mq.addEventListener("change", onPref);
+    else if (mq.addListener) mq.addListener(onPref);
+  }
+})();
+</script>
+</body>
+</html>

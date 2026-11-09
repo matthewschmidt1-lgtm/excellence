@@ -8,6 +8,8 @@ Static pages, no build step:
 - `index.html` is the cover and the Introduction.
 - `chapter-one.html` is Chapter one, The Organization That Lost Its Way.
 - `chapter-two.html` is Chapter two, Learning to See.
+- `chapter-three.html` is Chapter three, The Seven Forces. It introduces the
+  seven force symbols, which later chapters reuse.
 - `book.css` holds the styles the pages share.
 - `book.js` builds the header Menu: the contents and the Accessibility options
   (text size, light, contrast, spacing, motion). Choices are kept in the
