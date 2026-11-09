@@ -7,6 +7,7 @@ Static pages, no build step:
 
 - `index.html` is the cover and the Introduction.
 - `chapter-one.html` is Chapter one, The Organization That Lost Its Way.
+- `chapter-two.html` is Chapter two, Learning to See.
 - `book.css` holds the styles the pages share.
 
 ## Deploying on Railway

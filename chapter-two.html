@@ -1,0 +1,512 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Learning to See | The Architecture of Excellence</title>
+<meta name="description" content="Chapter two of The Architecture of Excellence by Matthew Schmidt. Northfield’s dashboard was green while stores gave its shelf away. How a fact thins out on its way to the people who decide, and what it takes to see.">
+<meta name="color-scheme" content="light dark">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500&family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..500&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="book.css">
+<style>
+/* ============================================================
+   Fig. 3 only: How a fact travels
+   One clay line runs from the store down to the boardroom.
+   It is the signal. At each handoff it steps down in weight,
+   exactly where a note says what was left out, and the speech
+   it carries gets smaller and quieter with it.
+   ============================================================ */
+:root {
+  --moss: #596450;
+
+  --signal-1: 10px;
+  --signal-2: 6px;
+  --signal-3: 3.5px;
+  --signal-4: 2px;
+  --signal-5: 1px;
+
+  --says-1: clamp(1.375rem, 5.6vw, 1.75rem);
+  --says-2: 1.25rem;
+  --says-3: 1.125rem;
+  --says-4: 1rem;
+  --reading-num: 2.5rem;
+
+  --relay-x: .75rem;        /* centre of the line from the content edge */
+  --relay-indent: 2.75rem;  /* where the text column starts */
+  --relay-node-y: .95rem;   /* node centre, level with the place tag */
+  --relay-gap: 9vh;         /* air above and below each handoff note */
+}
+@supports (height: 1svh) {
+  :root { --relay-gap: 9svh; }
+}
+@media (min-width: 48rem) {
+  :root {
+    --relay-indent: 3.5rem;
+    --says-2: 1.375rem;
+    --says-3: 1.1875rem;
+    --says-4: 1.0625rem;
+  }
+}
+@media (prefers-color-scheme: dark) {
+  :root { --moss: #9DAE8C; }
+}
+
+.relay {
+  list-style: none;
+  max-width: var(--measure);
+  margin: 0 auto;
+  padding: var(--s-8) 0 0;
+}
+
+.hop { position: relative; }
+.hop--1 { --w-in: var(--signal-1); --w-out: var(--signal-2); }
+.hop--2 { --w-in: var(--signal-2); --w-out: var(--signal-3); }
+.hop--3 { --w-in: var(--signal-3); --w-out: var(--signal-4); }
+.hop--4 { --w-in: var(--signal-4); --w-out: var(--signal-5); }
+.hop--5 { --w-in: var(--signal-5); }
+
+/* line pieces: a faint track with a clay fill inside it */
+.rl {
+  position: absolute;
+  left: var(--relay-x);
+  width: var(--w);
+  margin-left: calc(var(--w) / -2);
+  background: var(--rule);
+  border-radius: calc(var(--w) / 2);
+  overflow: hidden;
+}
+.rl::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--clay);
+  transform-origin: top;
+  transform: scaleY(1);
+}
+.rl--level { --w: var(--w-in); top: var(--relay-node-y); bottom: 0; border-radius: 0; }
+.rl--in { --w: var(--w-in); top: 0; height: 50%; border-radius: 0; }
+.rl--out { --w: var(--w-out); top: 50%; bottom: calc(var(--relay-node-y) * -1); border-radius: 0; }
+
+.hop-node {
+  position: absolute;
+  z-index: 2;
+  left: var(--relay-x);
+  top: var(--relay-node-y);
+  width: calc(var(--w-in) + .5rem);
+  height: calc(var(--w-in) + .5rem);
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: var(--paper);
+  border: var(--line-w) solid var(--ink);
+  transition: border-color var(--dur-settle) var(--ease);
+}
+
+.hop-level {
+  position: relative;
+  padding-left: var(--relay-indent);
+}
+.hop-body {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--s-3);
+  transition: transform var(--dur-settle) var(--ease);
+}
+.hop-speaker { margin-top: calc(var(--s-1) * -1); }
+
+.says {
+  margin-top: var(--s-2);
+  font-family: var(--font-serif);
+  line-height: 1.32;
+  text-wrap: pretty;
+  transition: color var(--dur-settle) var(--ease);
+}
+.hop--1 .says { font-size: var(--says-1); font-weight: 430; color: var(--ink); line-height: 1.25; }
+.hop--2 .says { font-size: var(--says-2); font-weight: 380; color: var(--ink); }
+.hop--3 .says { font-size: var(--says-3); font-weight: 340; color: var(--muted); }
+.hop--4 .says { font-size: var(--says-4); font-weight: 320; color: var(--muted); }
+
+/* the handoff: what fell off the line, said plainly */
+.hop-handoff {
+  position: relative;
+  padding: var(--relay-gap) 0 var(--relay-gap) var(--relay-indent);
+}
+.hop-lost {
+  position: relative;
+  max-width: 22rem;
+  font-family: var(--font-serif);
+  font-size: var(--fs-small);
+  font-style: italic;
+  line-height: 1.45;
+  color: var(--ink);
+  transition: color var(--dur-settle) var(--ease), transform var(--dur-settle) var(--ease);
+}
+.hop-lost::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: calc(var(--relay-x) - var(--relay-indent) + var(--s-3));
+  width: calc(var(--relay-indent) - var(--relay-x) - var(--s-5) + var(--s-2));
+  border-top: 1px dashed var(--clay);
+}
+.hop-lost .label {
+  display: block;
+  margin-bottom: var(--s-1);
+  font-style: normal;
+  color: var(--clay);
+  transition: color var(--dur-settle) var(--ease);
+}
+
+/* the boardroom: a plain status */
+.reading {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--s-3);
+  margin-top: var(--s-2);
+  padding: var(--s-4) var(--s-5);
+  border: 1px solid var(--hairline);
+  border-radius: 2px;
+  max-width: 100%;
+}
+.reading-text { margin: 0; }
+.reading-text .label { display: block; color: var(--ink); }
+.reading-num {
+  display: block;
+  margin-top: var(--s-2);
+  font-family: var(--font-serif);
+  font-size: var(--reading-num);
+  font-weight: 340;
+  line-height: 1;
+  color: var(--ink);
+}
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  margin: 0;
+  color: var(--ink);
+}
+.status-dot {
+  width: .75rem;
+  height: .75rem;
+  border-radius: 50%;
+  background: var(--moss);
+  flex: none;
+}
+
+/* Live state: added by JS only, never under reduced motion.
+   Nothing is hidden; the line fills and levels settle as reached. */
+.relay-live .rl::after {
+  transform: scaleY(var(--fill, 0));
+  transition: transform var(--dur-fill) var(--ease);
+}
+.relay-live .hop:not(.is-reached) .hop-body { transform: translateY(calc(var(--s-3) * -1)); }
+.relay-live .hop:not(.is-reached) .tag { color: var(--muted); border-color: var(--rule); }
+.relay-live .hop:not(.is-reached) .hop-node { border-color: var(--rule); }
+.relay-live .hop:not(.is-reached) .says { color: var(--muted); }
+.relay-live .hop-handoff:not(.is-reached) .hop-lost { color: var(--muted); transform: translateX(calc(var(--s-2) * -1)); }
+.relay-live .hop-handoff:not(.is-reached) .hop-lost .label { color: var(--muted); }
+</style>
+</head>
+<body>
+
+<a class="skip" href="#chapter">Skip to content</a>
+
+<header class="running" role="banner">
+  <a class="label" href="index.html">The Architecture of Excellence</a>
+</header>
+
+<main id="main">
+
+  <section class="opening" id="chapter" aria-labelledby="chapter-title" tabindex="-1">
+    <div class="measure">
+      <p class="label kicker">Chapter two</p>
+      <h1 class="opening-title" id="chapter-title">Learning to See</h1>
+      <p class="lede">A company can know a great deal about itself and still not see what is in front of it. Seeing is something a company does. It is not something it owns.</p>
+    </div>
+  </section>
+
+  <section class="chapter" aria-labelledby="s-green">
+    <div class="measure prose section-break">
+      <h2 class="h2" id="s-green">Everything was green</h2>
+      <p>In year nine, Northfield knew more about itself than it ever had.</p>
+      <p>There was a dashboard. It showed claims resolved within ten days, and the number was 91 percent. It showed a store satisfaction score of 4.2 out of 5. Every circle on it was green, and none of it was false.</p>
+      <p>It was also the year stores started giving Northfield’s shelf space to someone else.</p>
+      <p>Both things were true at once. This chapter is about how that can happen, in a company full of capable people looking straight at accurate numbers.</p>
+    </div>
+  </section>
+
+  <section class="chapter" aria-labelledby="s-whose">
+    <div class="measure prose section-break">
+      <h2 class="h2" id="s-whose">Whose ten days</h2>
+      <p>Start with the ten days. Northfield started counting when a claim form was complete. A store started counting when the bottles broke. Between those two moments there was a phone call, a form to find, a photo to send, and usually two more phone calls. Northfield’s ten days were, for the store, about sixteen.</p>
+      <p>Nobody had hidden the other six. They had simply never been measured, because they happened before Northfield’s process began, and Northfield measured its process.</p>
+      <p>The satisfaction score had the same shape. The survey went to a store when its claim was closed. Stores that had stopped filing claims were never asked.</p>
+      <p>So the least happy stores were the best-looking accounts on the report. Zero claims. A company will read silence as satisfaction for as long as it possibly can.</p>
+    </div>
+  </section>
+
+  <section class="chapter" aria-labelledby="s-travels">
+    <div class="measure prose section-break">
+      <h2 class="h2" id="s-travels">How a fact travels</h2>
+      <p>The people closest to the stores knew. That is nearly always the case. What matters is what happens to what they know on its way to the people who decide.</p>
+      <p>Here is one store’s news, on one ordinary morning, making that trip.</p>
+    </div>
+  </section>
+
+  <figure class="fig" id="fig-3" aria-labelledby="fig3-title">
+    <div class="fig-inner">
+      <div class="fig-head">
+        <p class="label fig-num">Fig. 3</p>
+        <h3 class="fig-title" id="fig3-title">How a fact travels</h3>
+        <p class="fig-sub">One store’s news, on its way to the people who decide.</p>
+      </div>
+
+      <ol class="relay" data-relay>
+        <li class="hop hop--1" data-hop>
+          <div class="hop-level">
+            <span class="rl rl--level" aria-hidden="true" data-line></span>
+            <span class="hop-node" aria-hidden="true"></span>
+            <div class="hop-body">
+              <span class="tag">At the store</span>
+              <span class="label hop-speaker">The store manager</span>
+              <p class="says">“I’ve stopped filing claims. It takes sixteen days and three phone calls, so I gave your shelf to someone else.”</p>
+            </div>
+          </div>
+          <div class="hop-handoff" data-handoff>
+            <span class="rl rl--in" aria-hidden="true" data-line></span>
+            <span class="rl rl--out" aria-hidden="true" data-line></span>
+            <p class="hop-lost"><span class="label">Left out:</span> the sixteen days and the three phone calls.</p>
+          </div>
+        </li>
+
+        <li class="hop hop--2" data-hop>
+          <div class="hop-level">
+            <span class="rl rl--level" aria-hidden="true" data-line></span>
+            <span class="hop-node" aria-hidden="true"></span>
+            <div class="hop-body">
+              <span class="tag">On the truck</span>
+              <span class="label hop-speaker">The driver</span>
+              <p class="says">“The store’s unhappy about claims. They’ve moved some of our product.”</p>
+            </div>
+          </div>
+          <div class="hop-handoff" data-handoff>
+            <span class="rl rl--in" aria-hidden="true" data-line></span>
+            <span class="rl rl--out" aria-hidden="true" data-line></span>
+            <p class="hop-lost"><span class="label">Left out:</span> the lost shelf.</p>
+          </div>
+        </li>
+
+        <li class="hop hop--3" data-hop>
+          <div class="hop-level">
+            <span class="rl rl--level" aria-hidden="true" data-line></span>
+            <span class="hop-node" aria-hidden="true"></span>
+            <div class="hop-body">
+              <span class="tag">At the depot</span>
+              <span class="label hop-speaker">The route supervisor</span>
+              <p class="says">“Some friction on claims at a few stores.”</p>
+            </div>
+          </div>
+          <div class="hop-handoff" data-handoff>
+            <span class="rl rl--in" aria-hidden="true" data-line></span>
+            <span class="rl rl--out" aria-hidden="true" data-line></span>
+            <p class="hop-lost"><span class="label">Left out:</span> that anyone was unhappy.</p>
+          </div>
+        </li>
+
+        <li class="hop hop--4" data-hop>
+          <div class="hop-level">
+            <span class="rl rl--level" aria-hidden="true" data-line></span>
+            <span class="hop-node" aria-hidden="true"></span>
+            <div class="hop-body">
+              <span class="tag">At the regional office</span>
+              <span class="label hop-speaker">The regional manager</span>
+              <p class="says">“Accounts stable. Minor feedback on claims.”</p>
+            </div>
+          </div>
+          <div class="hop-handoff" data-handoff>
+            <span class="rl rl--in" aria-hidden="true" data-line></span>
+            <span class="rl rl--out" aria-hidden="true" data-line></span>
+            <p class="hop-lost"><span class="label">Left out:</span> the stores.</p>
+          </div>
+        </li>
+
+        <li class="hop hop--5" data-hop>
+          <div class="hop-level">
+            <span class="hop-node" aria-hidden="true"></span>
+            <div class="hop-body">
+              <span class="tag">In the boardroom</span>
+              <span class="label hop-speaker">The dashboard</span>
+              <div class="reading">
+                <p class="reading-text"><span class="label">Claims resolved in ten days:</span> <span class="reading-num">91%</span></p>
+                <p class="status label"><span class="status-dot" aria-hidden="true"></span>Green</p>
+              </div>
+            </div>
+          </div>
+        </li>
+      </ol>
+    </div>
+    <figcaption class="fig-cap">An illustration, not a measurement. Nobody in it said anything untrue.</figcaption>
+  </figure>
+
+  <section class="chapter" aria-labelledby="s-lied">
+    <div class="measure prose section-break">
+      <h2 class="h2" id="s-lied">Nobody lied</h2>
+      <p>Go back through it and every step holds up. The driver summarized. The supervisor had forty stores and mentioned the pattern, not the store. The regional manager had a page to fill and wrote what was true of most accounts. Each of them passed along a little less than they received, and each of them was being reasonable.</p>
+      <p>This is what layers do to information. They don’t block it. They round it. Detail goes first, then anything awkward, then anything that would need a long explanation. What arrives at the top is accurate, calm, and almost empty.</p>
+      <p>And the room at the top was not being careless either. It was looking at exactly what it had asked to be shown.</p>
+    </div>
+  </section>
+
+  <section class="chapter" aria-labelledby="s-habits">
+    <div class="measure prose section-break">
+      <h2 class="h2" id="s-habits">Habits of sight</h2>
+      <p>People have habits of thought. Companies have habits of sight. Over the years Northfield had learned to look at claims filed, days to resolve, and cost per replacement. It had become very good at seeing those. It had no habit of looking at a store’s back room.</p>
+      <p>That is the uncomfortable thing about culture. It doesn’t only shape what a company does. It shapes what a company notices, and a problem nobody notices never gets as far as being ignored.</p>
+    </div>
+  </section>
+
+  <blockquote class="pull">
+    <p>A company sees what it has built itself to look at.</p>
+  </blockquote>
+
+  <section class="chapter" aria-labelledby="s-truck">
+    <div class="measure prose section-break">
+      <h2 class="h2" id="s-truck">One morning on a truck</h2>
+      <p>The new hire from the last chapter was named Ines. She worked in analytics, and after a month with the claims data she did something that was not in her job description. She asked to ride along on a delivery route.</p>
+      <p>At the fourth store the manager walked her to the back room. There were eleven dented cases of Northfield tea stacked by the door, none of them claimed. Out front, the end of the aisle that used to be Northfield’s had another company’s tea on it.</p>
+      <p>It took one morning. It needed no model and no new system. It needed someone to go and stand where the customer stands, and to look before deciding what the answer was.</p>
+      <p>That last part is harder than it sounds. Ines wanted to fix it on the drive home. Most of us do. But a problem you rush to fix is a problem you have stopped looking at, and she had seen one store. So she went out again the next week, and the week after.</p>
+    </div>
+  </section>
+
+  <section class="chapter" aria-labelledby="s-informed">
+    <div class="measure prose section-break">
+      <h2 class="h2" id="s-informed">Informed is not aware</h2>
+      <p>There are three parts to seeing, and a company needs all of them. It has to go looking, especially for what would contradict it. It has to recognize what it finds, which means telling the signal from the noise. And it has to respond, which means something actually changes.</p>
+      <p>Northfield had the first two in abundance. It collected and it analyzed. What it did not do, very often, was change. A company that keeps finding out the truth and keeps behaving the same way is not aware. It is informed.</p>
+      <p>Ines came back with photographs, a count of unclaimed cases at fourteen stores, and one sentence from a store manager, written down word for word. In most companies, the next thing that happens to a finding like that is a deck. Then a meeting about the deck. Then a better deck.</p>
+      <p>Whether that happened at Northfield had very little to do with eyesight. It had to do with whether it was safe to say what she saw, whether anyone could act on it, and what the company rewarded. Seeing is the first of seven forces. The other six decide what seeing is worth. They are the next chapter.</p>
+    </div>
+  </section>
+
+  <section class="ponder" aria-labelledby="ponder-label">
+    <div class="ponder-inner">
+      <p class="label" id="ponder-label">Something to ponder</p>
+      <p class="ponder-1">Somewhere near your customer, someone already knows the thing your reports have not shown you yet.</p>
+      <p class="ponder-2">You don’t need a meeting to find them. One morning would do.</p>
+    </div>
+  </section>
+
+  <section class="next" aria-labelledby="next-label">
+    <p class="label" id="next-label">Next</p>
+    <p class="next-text"><span class="next-num">Chapter three.</span> <span class="next-title">The Seven Forces.</span></p>
+    <p class="label soon">Coming soon</p>
+  </section>
+
+</main>
+
+<footer class="foot" role="contentinfo">
+  <p class="label">Made by Matty</p>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+  var root = document.documentElement;
+  var relay = document.querySelector("[data-relay]");
+  var fig = document.getElementById("fig-3");
+  if (!relay || !fig || !window.requestAnimationFrame) return;
+
+  var mq = window.matchMedia ? window.matchMedia("(prefers-reduced-motion: reduce)") : null;
+  if (mq && mq.matches) return;
+
+  function all(sel) { return Array.prototype.slice.call(relay.querySelectorAll(sel)); }
+  var lines = all("[data-line]");
+  var hops = all("[data-hop]");
+  var handoffs = all("[data-handoff]");
+  var ticking = false;
+  var listening = false;
+  var io = null;
+
+  function update() {
+    ticking = false;
+    var vh = window.innerHeight || document.documentElement.clientHeight;
+    var read = vh * 0.6;
+    var i, r, p;
+
+    for (i = 0; i < lines.length; i++) {
+      r = lines[i].getBoundingClientRect();
+      p = r.height ? (read - r.top) / r.height : 0;
+      if (p < 0) p = 0;
+      if (p > 1) p = 1;
+      lines[i].style.setProperty("--fill", p.toFixed(4));
+    }
+    for (i = 0; i < hops.length; i++) {
+      r = hops[i].getBoundingClientRect();
+      hops[i].classList.toggle("is-reached", read >= r.top);
+    }
+    for (i = 0; i < handoffs.length; i++) {
+      r = handoffs[i].getBoundingClientRect();
+      handoffs[i].classList.toggle("is-reached", read >= r.top + r.height / 2);
+    }
+  }
+
+  function onScroll() {
+    if (!ticking) {
+      ticking = true;
+      window.requestAnimationFrame(update);
+    }
+  }
+
+  function listen(on) {
+    if (on === listening) return;
+    listening = on;
+    if (on) {
+      window.addEventListener("scroll", onScroll, { passive: true });
+      window.addEventListener("resize", onScroll);
+    } else {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+    }
+  }
+
+  function stopLive() {
+    listen(false);
+    if (io) io.disconnect();
+    root.classList.remove("relay-live");
+  }
+
+  try {
+    root.classList.add("relay-live");
+    update();
+  } catch (e) {
+    root.classList.remove("relay-live");
+    return;
+  }
+
+  if ("IntersectionObserver" in window) {
+    io = new IntersectionObserver(function (entries) {
+      for (var i = 0; i < entries.length; i++) listen(entries[i].isIntersecting);
+      onScroll();
+    }, { rootMargin: "50% 0px 50% 0px" });
+    io.observe(fig);
+  } else {
+    listen(true);
+  }
+
+  window.addEventListener("load", onScroll);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(onScroll);
+
+  if (mq) {
+    var onPref = function (e) { if (e.matches) stopLive(); };
+    if (mq.addEventListener) mq.addEventListener("change", onPref);
+    else if (mq.addListener) mq.addListener(onPref);
+  }
+})();
+</script>
+</body>
+</html>
