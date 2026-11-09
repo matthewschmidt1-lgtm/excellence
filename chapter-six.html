@@ -1,0 +1,526 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>From Potential to Performance | The Architecture of Excellence</title>
+<meta name="description" content="Chapter six of The Architecture of Excellence by Matthew Schmidt. Northfield already had the answer, running in one region. Three tries at making it how the whole company works, and the three things that have to hold at once.">
+<meta name="color-scheme" content="light dark">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500&family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..500&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="book.css">
+<script>
+/* apply saved reading options before first paint; book.js does the rest */
+(function(){try{var p=JSON.parse(localStorage.getItem("aoe-prefs")||"{}"),r=document.documentElement,ok={text:/^(l|xl)$/,theme:/^(light|candle)$/,contrast:/^more$/,spacing:/^roomy$/,motion:/^reduce$/};for(var k in ok){if(typeof p[k]==="string"&&ok[k].test(p[k]))r.setAttribute("data-"+k,p[k])}}catch(e){}})();
+</script>
+<style>
+/* ============================================================
+   Fig. 7 only: Three tries at the same idea
+   The book's line from the work to the customer, three times,
+   running down the page side by side. The three points sit on
+   the same rows for all three, named once at the left. A line
+   that does not hold breaks just after its last good point:
+   a gap, then only a faint dotted trace to an empty ring.
+   Everything is placed on one vertical unit, --tr-u:
+   start 0.5, Aligned 2.5, Enabled 4.5, Reinforced 6.5, end 8.5.
+   ============================================================ */
+:root {
+  --tr-u: 2.75rem;
+  --tr-line: .125rem;
+  --tr-node: .75rem;
+  --tr-point: .625rem;
+  --tr-gap: .6;            /* the break: how far past the point, in units */
+  --tr-gap-len: .6;        /* and how long the gap is, in units */
+  --tr-label: 6.75rem;
+  --tr-pulse-dur: 3200ms;
+  --tr-draw-dur: 900ms;
+  --tr-stagger: 350ms;
+}
+@media (min-width: 48rem) {
+  :root { --tr-u: 3.25rem; --tr-label: 10rem; }
+}
+
+.tries {
+  container: tries / inline-size;
+  max-width: var(--measure);
+  margin: 0 auto;
+  padding-top: var(--s-8);
+}
+
+/* Narrow, or large text on a phone: a slimmer name column and
+   smaller labels, so the three try names keep a column each. */
+@container tries (max-width: 20rem) {
+  .tries .tr-grid { grid-template-columns: 5rem repeat(3, minmax(0, 1fr)); }
+  .tries .tr-head { font-size: var(--fs-micro); }
+  .tries .tr-row { font-size: var(--fs-label); }
+  .tries .tr-row.label { font-size: var(--fs-micro); letter-spacing: .04em; }
+}
+
+.tr-grid {
+  display: grid;
+  grid-template-columns: var(--tr-label) repeat(3, minmax(0, 1fr));
+  grid-template-rows: auto repeat(9, var(--tr-u));
+  column-gap: var(--s-2);
+}
+.tr-head {
+  grid-row: 1;
+  align-self: end;
+  padding-bottom: var(--s-4);
+  font-family: var(--font-sans);
+  font-size: var(--fs-label);
+  line-height: 1.25;
+  text-align: center;
+  color: var(--ink);
+}
+.tr-head--1 { grid-column: 2; }
+.tr-head--2 { grid-column: 3; }
+.tr-head--3 { grid-column: 4; color: var(--clay); }
+
+.tr-row {
+  grid-column: 1;
+  align-self: center;
+  padding-right: var(--s-2);
+  font-family: var(--font-sans);
+  font-size: var(--fs-small);
+  line-height: 1.25;
+  color: var(--ink);
+}
+.tr-row--end { color: var(--ink); }
+.tr-row.label { font-size: var(--fs-label); color: var(--ink); }
+.tr-row--start { grid-row: 2; }
+.tr-row--a { grid-row: 4; }
+.tr-row--e { grid-row: 6; }
+.tr-row--r { grid-row: 8; }
+.tr-row--end { grid-row: 10; }
+
+/* faint guides across the rows keep the three points lined up */
+.tr-guide {
+  grid-column: 2 / -1;
+  align-self: center;
+  height: 0;
+  border-top: 1px dotted var(--hairline);
+}
+.tr-guide--a { grid-row: 4; }
+.tr-guide--e { grid-row: 6; }
+.tr-guide--r { grid-row: 8; }
+
+/* one try: a column holding its own line */
+.try {
+  --solid: 8.5;   /* where the solid line stops, in units */
+  --trace: 8.5;   /* where the faint trace starts, in units */
+  position: relative;
+  grid-row: 2 / span 9;
+  color: var(--ink);
+}
+.try--1 { grid-column: 2; --solid: calc(2.5 + var(--tr-gap)); --trace: calc(2.5 + var(--tr-gap) + var(--tr-gap-len)); }
+.try--2 { grid-column: 3; --solid: calc(4.5 + var(--tr-gap)); --trace: calc(4.5 + var(--tr-gap) + var(--tr-gap-len)); }
+.try--3 { grid-column: 4; color: var(--clay); }
+
+.tr-solid,
+.tr-trace {
+  position: absolute;
+  left: 50%;
+  width: var(--tr-line);
+  margin-left: calc(var(--tr-line) / -2);
+}
+.tr-solid {
+  top: calc(var(--tr-u) * .5);
+  height: calc(var(--tr-u) * (var(--solid) - .5));
+  background: currentColor;
+  border-radius: var(--tr-line);
+  transform-origin: top;
+  transition: transform var(--tr-draw-dur) var(--ease);
+}
+.tr-trace {
+  top: calc(var(--tr-u) * var(--trace));
+  height: calc(var(--tr-u) * (8.5 - var(--trace)));
+  border-left: var(--tr-line) dotted var(--rule);
+  transition: opacity var(--dur-settle) var(--ease);
+}
+
+.tr-node {
+  position: absolute;
+  z-index: 2;
+  left: 50%;
+  top: calc(var(--tr-u) * var(--at));
+  width: var(--tr-point);
+  height: var(--tr-point);
+  margin: calc(var(--tr-point) / -2) 0 0 calc(var(--tr-point) / -2);
+  border-radius: 50%;
+  transition: background-color var(--dur-settle) var(--ease), border-color var(--dur-settle) var(--ease);
+}
+.tr-node--start {
+  --at: .5;
+  width: var(--tr-node);
+  height: var(--tr-node);
+  margin: calc(var(--tr-node) / -2) 0 0 calc(var(--tr-node) / -2);
+  background: var(--ink);
+}
+.tr-node--held { background: currentColor; }
+.tr-node--lost {
+  background: var(--paper);
+  border: 1px solid var(--rule);
+}
+.tr-node--end {
+  --at: 8.5;
+  width: var(--tr-node);
+  height: var(--tr-node);
+  margin: calc(var(--tr-node) / -2) 0 0 calc(var(--tr-node) / -2);
+  background: var(--paper);
+  border: var(--line-w) solid var(--rule);
+}
+.try--3 .tr-node--end { background: var(--clay); border-color: var(--clay); }
+
+/* the pulse: travels the line and dies at the break, or arrives */
+.tr-pulse {
+  position: absolute;
+  z-index: 3;
+  left: 50%;
+  top: calc(var(--tr-u) * .5);
+  width: var(--pulse);
+  height: var(--pulse);
+  margin: calc(var(--pulse) / -2) 0 0 calc(var(--pulse) / -2);
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow: 0 0 0 .3125rem var(--clay-halo);
+  opacity: 0;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .tr-pulse { animation: tr-travel var(--tr-pulse-dur) var(--ease-travel) infinite; }
+  .try--2 .tr-pulse { animation-delay: 400ms; }
+  .try--3 .tr-pulse { animation-delay: 800ms; }
+}
+@keyframes tr-travel {
+  0% { transform: translateY(0); opacity: 0; }
+  6% { transform: translateY(0); opacity: 1; }
+  50% { transform: translateY(calc(var(--tr-u) * (var(--solid) - .5))); opacity: 1; }
+  64%, 100% { transform: translateY(calc(var(--tr-u) * (var(--solid) - .5))); opacity: 0; }
+}
+
+/* the key: what each try did, what held, what happened */
+.tr-key {
+  list-style: none;
+  margin: var(--s-7) 0 0;
+  padding: 0;
+  border-top: 1px solid var(--hairline);
+}
+.tr-entry {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-1);
+  padding-block: var(--s-5);
+  border-bottom: 1px solid var(--hairline);
+}
+.tr-entry .label { color: var(--ink); }
+.tr-entry--3 .label:first-child { color: var(--clay); }
+.tr-done {
+  font-family: var(--font-serif);
+  font-size: var(--fs-fig);
+  line-height: 1.35;
+  color: var(--ink);
+}
+.tr-holds { color: var(--muted); }
+.tr-entry .tr-holds { color: var(--muted); }
+.tr-result {
+  font-family: var(--font-sans);
+  font-size: var(--fs-small);
+  line-height: 1.45;
+  color: var(--muted);
+}
+
+/* Live state: added by JS only, removed by book.js for Still.
+   Each line draws in turn once the figure is reached; the faint
+   trace and the far end appear only after the line has stopped. */
+.tries-live .tries:not(.is-drawn) .tr-solid { transform: scaleY(0); }
+.tries-live .tries:not(.is-drawn) .tr-trace,
+.tries-live .tries:not(.is-drawn) .tr-pulse { opacity: 0; animation-play-state: paused; }
+.tries-live .tries:not(.is-drawn) .tr-node--held { background: var(--paper); }
+.tries-live .tries:not(.is-drawn) .try--3 .tr-node--end { background: var(--paper); border-color: var(--rule); }
+.tries-live .try--2 .tr-solid { transition-delay: var(--tr-stagger); }
+.tries-live .try--3 .tr-solid { transition-delay: calc(var(--tr-stagger) * 2); }
+.tries-live .tr-trace { transition-delay: calc(var(--tr-stagger) * 2 + var(--tr-draw-dur)); }
+.tries-live .try--3 .tr-node--end { transition-delay: calc(var(--tr-stagger) * 2 + var(--tr-draw-dur)); }
+</style>
+</head>
+<body>
+
+<a class="skip" href="#chapter">Skip to content</a>
+
+<header class="running" role="banner">
+  <a class="running-link" href="index.html">The Architecture of Excellence</a>
+  <a class="running-link running-contents" href="#contents">Contents</a>
+</header>
+
+<main id="main">
+
+  <section class="opening" id="chapter" aria-labelledby="chapter-title" tabindex="-1">
+    <div class="measure">
+      <p class="label kicker">Chapter six</p>
+      <h1 class="opening-title" id="chapter-title">From Potential to Performance</h1>
+      <p class="lede">Northfield already had the answer. It was running in one region, on one person’s say-so. Getting it from there to everywhere turned out to be the whole job.</p>
+    </div>
+  </section>
+
+  <section class="chapter" aria-labelledby="s-region">
+    <div class="measure prose section-break">
+      <h2 class="h2" id="s-region">One region</h2>
+      <p>By now the leadership team agreed. Drivers should replace a broken case on the spot. The receipt had made the argument, the three lenses had picked the answer, and one region had been doing it for four years.</p>
+      <p>That region was worth a second look. Same company, same trucks, same tea, same pay. Its drivers were no more talented than anyone else’s. Its stores were the happiest Northfield had.</p>
+      <p>The difference was not the people. It was what surrounded them. One manager had arranged things so that an ordinary driver, on an ordinary morning, could do the right thing without asking. Talent is what people bring. Performance is what the company does with it.</p>
+    </div>
+  </section>
+
+  <section class="chapter" aria-labelledby="s-first">
+    <div class="measure prose section-break">
+      <h2 class="h2" id="s-first">The first try</h2>
+      <p>So the founder stood up at the company meeting and announced it. From Monday, any driver could replace a broken case on the spot. People applauded. It was, after all, what the founder had been saying for nine years.</p>
+      <p>On Monday a driver in another region found a broken case and wanted to replace it. There were no spare cases on his truck. His handheld had a screen for deliveries and a screen for returns, and nothing for this. He wrote it on a piece of paper, and the store manager filed a claim.</p>
+      <p>Everybody knew what Northfield wanted. Nobody had been given the means to do it. An announcement moves what people know. It does not move anything else.</p>
+    </div>
+  </section>
+
+  <section class="chapter" aria-labelledby="s-second">
+    <div class="measure prose section-break">
+      <h2 class="h2" id="s-second">The second try</h2>
+      <p>Operations fixed that inside a month. Two spare cases on every truck. One new button on the handheld, which took ten seconds to press. A small budget for each route, and no form.</p>
+      <p>For three weeks it worked everywhere. Then the monthly report came out, and regional managers saw their replacement costs, which were up, next to their targets, which had not changed. Nobody was told to stop. Managers started asking drivers to “use judgment.” Drivers understood exactly what that meant.</p>
+      <p>By the end of the quarter, replacements on the spot were back where they had started, in one region.</p>
+    </div>
+  </section>
+
+  <section class="chapter" aria-labelledby="s-third">
+    <div class="measure prose section-break">
+      <h2 class="h2" id="s-third">The third try</h2>
+      <p>The third change was the smallest to describe and the hardest to make. Regional managers stopped being measured on what replacements cost and started being measured on how many stores they kept. The claims team, which now had very few claims, was asked to run the monthly spot check and to find out why bottles were breaking in the first place.</p>
+      <p>Then came the real test, which is always the first time it goes wrong. A driver on a northern route replaced forty cases in a month, far more than anyone else. Under the old rule that would have meant a meeting and a new approval. This time someone rode along. The cases were breaking on one bad stretch of road, because of how they were stacked. The stacking changed. Nobody added a rule.</p>
+      <p>Word of that traveled faster than any announcement had. That is how people learn what a company means. They learn it from what happens next.</p>
+    </div>
+  </section>
+
+  <figure class="fig" id="fig-7" aria-labelledby="fig7-title">
+    <div class="fig-inner">
+      <div class="fig-head">
+        <p class="label fig-num">Fig. 7</p>
+        <h3 class="fig-title" id="fig7-title">Three tries at the same idea</h3>
+        <p class="fig-sub">Letting drivers replace a broken case on the spot.</p>
+      </div>
+
+      <div class="tries" data-tries>
+        <div class="tr-grid">
+          <span class="tr-head tr-head--1" aria-hidden="true">First try</span>
+          <span class="tr-head tr-head--2" aria-hidden="true">Second try</span>
+          <span class="tr-head tr-head--3" aria-hidden="true">Third try</span>
+
+          <span class="tr-row tr-row--start">What people can do</span>
+          <span class="tr-row tr-row--a label">Aligned</span>
+          <span class="tr-row tr-row--e label">Enabled</span>
+          <span class="tr-row tr-row--r label">Reinforced</span>
+          <span class="tr-row tr-row--end">What the store gets</span>
+
+          <span class="tr-guide tr-guide--a" aria-hidden="true"></span>
+          <span class="tr-guide tr-guide--e" aria-hidden="true"></span>
+          <span class="tr-guide tr-guide--r" aria-hidden="true"></span>
+
+          <span class="try try--1" aria-hidden="true">
+            <span class="tr-solid"></span>
+            <span class="tr-trace"></span>
+            <span class="tr-node tr-node--start"></span>
+            <span class="tr-node tr-node--held" style="--at:2.5"></span>
+            <span class="tr-node tr-node--lost" style="--at:4.5"></span>
+            <span class="tr-node tr-node--lost" style="--at:6.5"></span>
+            <span class="tr-node tr-node--end"></span>
+            <span class="tr-pulse"></span>
+          </span>
+          <span class="try try--2" aria-hidden="true">
+            <span class="tr-solid"></span>
+            <span class="tr-trace"></span>
+            <span class="tr-node tr-node--start"></span>
+            <span class="tr-node tr-node--held" style="--at:2.5"></span>
+            <span class="tr-node tr-node--held" style="--at:4.5"></span>
+            <span class="tr-node tr-node--lost" style="--at:6.5"></span>
+            <span class="tr-node tr-node--end"></span>
+            <span class="tr-pulse"></span>
+          </span>
+          <span class="try try--3" aria-hidden="true">
+            <span class="tr-solid"></span>
+            <span class="tr-node tr-node--start"></span>
+            <span class="tr-node tr-node--held" style="--at:2.5"></span>
+            <span class="tr-node tr-node--held" style="--at:4.5"></span>
+            <span class="tr-node tr-node--held" style="--at:6.5"></span>
+            <span class="tr-node tr-node--end"></span>
+            <span class="tr-pulse"></span>
+          </span>
+        </div>
+
+        <ol class="tr-key">
+          <li class="tr-entry tr-entry--1">
+            <span class="label">First try</span>
+            <span class="tr-done">Announced at the company meeting.</span>
+            <span class="label tr-holds">Aligned only</span>
+            <span class="tr-result">Everyone knew. Nobody had the means.</span>
+          </li>
+          <li class="tr-entry tr-entry--2">
+            <span class="label">Second try</span>
+            <span class="tr-done">Spare cases on every truck, and one new button.</span>
+            <span class="label tr-holds">Aligned and Enabled</span>
+            <span class="tr-result">It worked for three weeks, until the monthly report.</span>
+          </li>
+          <li class="tr-entry tr-entry--3">
+            <span class="label">Third try</span>
+            <span class="tr-done">Managers measured on stores kept.</span>
+            <span class="label tr-holds">All three</span>
+            <span class="tr-result">Replaced the same day, in every region.</span>
+          </li>
+        </ol>
+      </div>
+    </div>
+    <figcaption class="fig-cap">An illustration, not a measurement. Northfield is invented, and so are the three tries.</figcaption>
+  </figure>
+
+  <section class="chapter" aria-labelledby="s-three">
+    <div class="measure prose section-break">
+      <h2 class="h2" id="s-three">Three things, all at once</h2>
+      <p>Northfield needed three things to be true at the same time, and it found them one at a time, the expensive way.</p>
+      <p>People have to be aligned. That does not mean they agree, or that they have read the strategy. It means a driver alone at a loading dock at six in the morning can make the call the company would want, without phoning anyone. Agreement is a feeling in a meeting. Alignment is what people do when the meeting is not there.</p>
+      <p>People have to be enabled. They need the means: the tools, the time, the authority, the spare cases on the truck. Most companies skip this one without noticing. They hire good people, tell them what excellent looks like, and surround them with a system that makes it hard.</p>
+      <p>And the behavior has to be reinforced. What gets measured, praised, promoted and forgiven has to point the same way as what was announced. Where the two disagree, people believe the consequences. They are right to.</p>
+      <p>Take away any one, and the other two do not add up to two thirds of a result. They add up to very little, as the first two tries showed.</p>
+    </div>
+  </section>
+
+  <blockquote class="pull">
+    <p>Agreement is a feeling in a meeting. Alignment is what people do when the meeting is not there.</p>
+  </blockquote>
+
+  <section class="chapter" aria-labelledby="s-sum">
+    <div class="measure prose section-break">
+      <h2 class="h2" id="s-sum">More than the sum</h2>
+      <p>Here is what changed at Northfield, and it is easy to miss. No one became more talented. Nobody was replaced. The same drivers, the same claims team and the same managers produced a different result, because of how their work now fitted together.</p>
+      <p>That is what I mean by collective performance. It is not individual performance added up. A company is not as good as its people. It is as good as what happens between them.</p>
+      <p>It runs both ways. For six years Northfield’s people had been combining into something slower and more cautious than any of them was alone. Nobody chose that either.</p>
+      <p>Which leaves something awkward for the people at the top. The founder had wanted this for nine years, and said so every year, and it had not happened. Wanting it was not the missing piece. What a leader is actually for, if not that, is the next chapter.</p>
+    </div>
+  </section>
+
+  <section class="ponder" aria-labelledby="ponder-label">
+    <div class="ponder-inner">
+      <p class="label" id="ponder-label">Something to ponder</p>
+      <p class="ponder-1">Somewhere in your company, people have been told to do something they have not been given the means to do.</p>
+      <p class="ponder-2">They know. They are waiting to see whether anyone else notices.</p>
+    </div>
+  </section>
+
+  <section class="next" aria-labelledby="next-label">
+    <p class="label" id="next-label">Next</p>
+    <p class="next-text"><span class="next-num">Chapter seven.</span> <span class="next-title">Leadership as System Design.</span></p>
+    <p class="label soon">Coming soon</p>
+  </section>
+
+</main>
+
+<footer class="foot" role="contentinfo">
+  <div class="foot-inner">
+    <nav id="contents" aria-label="Contents">
+      <p class="label">Contents</p>
+      <ol class="toc-list">
+        <li><a href="index.html"><span class="toc-num" aria-hidden="true"></span>Introduction</a></li>
+        <li><a href="chapter-one.html"><span class="toc-num">01</span>The Organization That Lost Its Way</a></li>
+        <li><a href="chapter-two.html"><span class="toc-num">02</span>Learning to See</a></li>
+        <li><a href="chapter-three.html"><span class="toc-num">03</span>The Seven Forces</a></li>
+        <li><a href="chapter-four.html"><span class="toc-num">04</span>The Hidden Cost of Complexity</a></li>
+        <li><a href="chapter-five.html"><span class="toc-num">05</span>The Three Lenses</a></li>
+        <li><a href="chapter-six.html" aria-current="page"><span class="toc-num">06</span>From Potential to Performance</a></li>
+      </ol>
+    </nav>
+    <p class="label">Made by Matty</p>
+  </div>
+</footer>
+
+<script src="book.js" defer></script>
+
+<script>
+(function () {
+  "use strict";
+  var root = document.documentElement;
+  var box = document.querySelector("[data-tries]");
+  var fig = document.getElementById("fig-7");
+  if (!box || !fig || !window.requestAnimationFrame) return;
+
+  var mq = window.matchMedia ? window.matchMedia("(prefers-reduced-motion: reduce)") : null;
+  if (mq && mq.matches) return;
+
+  /* the lines draw once, when the drawing is well into view, and
+     stay drawn; anything already scrolled past is drawn at once */
+  var grid = box.querySelector(".tr-grid");
+  var ticking = false;
+  var listening = false;
+  var io = null;
+
+  function update() {
+    ticking = false;
+    var vh = window.innerHeight || document.documentElement.clientHeight;
+    if (grid.getBoundingClientRect().top < vh * 0.6) {
+      box.classList.add("is-drawn");
+      listen(false);
+      if (io) io.disconnect();
+    }
+  }
+
+  function onScroll() {
+    if (!ticking) {
+      ticking = true;
+      window.requestAnimationFrame(update);
+    }
+  }
+
+  function listen(on) {
+    if (on === listening) return;
+    listening = on;
+    if (on) {
+      window.addEventListener("scroll", onScroll, { passive: true });
+      window.addEventListener("resize", onScroll);
+    } else {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+    }
+  }
+
+  function stopLive() {
+    listen(false);
+    if (io) io.disconnect();
+    root.classList.remove("tries-live");
+  }
+
+  try {
+    root.classList.add("tries-live");
+    update();
+  } catch (e) {
+    root.classList.remove("tries-live");
+    return;
+  }
+
+  if (!box.classList.contains("is-drawn")) {
+    if ("IntersectionObserver" in window) {
+      io = new IntersectionObserver(function (entries) {
+        for (var i = 0; i < entries.length; i++) listen(entries[i].isIntersecting);
+        onScroll();
+      }, { rootMargin: "50% 0px 50% 0px" });
+      io.observe(fig);
+    } else {
+      listen(true);
+    }
+  }
+
+  window.addEventListener("load", onScroll);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(onScroll);
+
+  if (mq) {
+    var onPref = function (e) { if (e.matches) stopLive(); };
+    if (mq.addEventListener) mq.addEventListener("change", onPref);
+    else if (mq.addListener) mq.addListener(onPref);
+  }
+})();
+</script>
+</body>
+</html>

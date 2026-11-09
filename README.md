@@ -13,6 +13,7 @@ Static pages, no build step:
 - `chapter-four.html` is Chapter four, The Hidden Cost of Complexity.
 - `chapter-five.html` is Chapter five, The Three Lenses. It introduces the
   small three-ring lens glyph, which later chapters reuse.
+- `chapter-six.html` is Chapter six, From Potential to Performance.
 - `book.css` holds the styles the pages share.
 - `book.js` builds the header Menu: the contents and the Accessibility options
   (text size, light, contrast, spacing, motion). Choices are kept in the
