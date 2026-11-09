@@ -1,0 +1,552 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Pursuit of Excellence | The Architecture of Excellence</title>
+<meta name="description" content="Chapter eight of The Architecture of Excellence by Matthew Schmidt. Northfield did not become a company that stops drifting. It became one that notices sooner and comes back. Excellence as the habit of coming back.">
+<meta name="color-scheme" content="light dark">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500&family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..500&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="book.css">
+<script>
+/* apply saved reading options before first paint; book.js does the rest */
+(function(){try{var p=JSON.parse(localStorage.getItem("aoe-prefs")||"{}"),r=document.documentElement,ok={text:/^(l|xl)$/,theme:/^(light|candle)$/,contrast:/^more$/,spacing:/^roomy$/,motion:/^reduce$/};for(var k in ok){if(typeof p[k]==="string"&&ok[k].test(p[k]))r.setAttribute("data-"+k,p[k])}}catch(e){}})();
+</script>
+<style>
+/* ============================================================
+   The refrain and the last sentence
+   ============================================================ */
+.refrain {
+  font-size: 1.08em;
+  font-weight: 450;
+  color: var(--clay);
+}
+.prose p.last {
+  margin-top: var(--s-8);
+  font-size: var(--fs-lede);
+  line-height: 1.3;
+  font-weight: 340;
+  text-wrap: balance;
+}
+
+/* ============================================================
+   Fig. 9 only: A degree at a time, and back
+   The answer to Fig. 2, drawn in the same space: 100 units wide,
+   485 tall, the box held at that ratio. The clay line runs
+   straight down at x = 8 as before. The ink line leaves it three
+   times, at 4, 5 and 6 degrees, exactly as the first one turned,
+   and each time comes back. The widest departure is under six
+   units; Fig. 2 ended seventy-eight units away.
+   ============================================================ */
+:root {
+  --drift-max: 28rem;
+  --drift-pad: 1rem;      /* clear space between a line and its label */
+  --drift-lift: 1.25rem;    /* how far a label's foot sits above its turn */
+  --drift-node: .625rem;
+  --fs-promise: 1.25rem;
+}
+@media (min-width: 48rem) {
+  :root { --fs-promise: 1.375rem; }
+}
+
+.drift {
+  max-width: var(--drift-max);
+  margin: 0 auto;
+  padding-top: var(--s-8);
+}
+.drift-draw {
+  position: relative;
+  aspect-ratio: 100 / 485;
+}
+.drift-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.drift-svg line,
+.drift-svg polyline {
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+.drift-true { stroke: var(--clay); }
+.drift-path { stroke: var(--ink); }
+.drift-reach {
+  stroke: var(--clay);
+  stroke-width: 1;
+  stroke-dasharray: 2 2;
+}
+
+.at {
+  position: absolute;
+  left: calc(var(--x) * 1%);
+  top: calc(var(--y) / 4.85 * 1%);
+}
+
+.drift-node {
+  z-index: 2;
+  width: var(--drift-node);
+  height: var(--drift-node);
+  margin: calc(var(--drift-node) / -2) 0 0 calc(var(--drift-node) / -2);
+  border-radius: 50%;
+  background: var(--paper);
+  border: var(--line-w) solid var(--ink);
+  transition: border-color var(--dur-settle) var(--ease), background-color var(--dur-settle) var(--ease);
+}
+.drift-node--start { background: var(--ink); }
+/* the shared end: the customer ring, filled, as at the end of Fig. 1 */
+.drift-node--end {
+  width: var(--node);
+  height: var(--node);
+  margin: calc(var(--node) / -2) 0 0 calc(var(--node) / -2);
+  border-color: var(--clay);
+  background: var(--clay);
+}
+
+/* labels sit up and to the right of each turn; above a turn the
+   line is always further left, and below it the line goes back */
+.drift-label {
+  position: absolute;
+  right: 0;
+  left: calc(var(--x) * 1% + var(--drift-pad));
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--s-2);
+  text-align: left;
+  transition: transform var(--dur-settle) var(--ease);
+}
+.drift-label--start { top: calc(var(--drift-node) * -1); }
+.turn .drift-label {
+  bottom: calc((100 - var(--y) / 4.85) * 1% + var(--drift-lift));
+}
+.turns { list-style: none; margin: 0; padding: 0; }
+
+/* drifted: plain and quiet. came back: the half that matters */
+.drift-off {
+  font-family: var(--font-sans);
+  font-size: var(--fs-small);
+  line-height: 1.45;
+  color: var(--muted);
+  max-width: 15rem;
+  transition: color var(--dur-settle) var(--ease);
+}
+.drift-back {
+  position: relative;
+  padding-left: var(--s-4);
+  font-family: var(--font-serif);
+  font-size: var(--fs-promise);
+  font-style: italic;
+  font-weight: 340;
+  line-height: 1.2;
+  color: var(--clay);
+  max-width: 15rem;
+  text-wrap: balance;
+  transition: color var(--dur-settle) var(--ease);
+}
+.drift-back::before {
+  /* a small return mark: down, then back to the left */
+  content: "";
+  position: absolute;
+  left: 0;
+  top: .2em;
+  width: .5rem;
+  height: .55em;
+  border-left: 1px solid currentColor;
+  border-bottom: 1px solid currentColor;
+  border-bottom-left-radius: .25rem;
+}
+.promise {
+  font-family: var(--font-serif);
+  font-size: var(--fs-promise);
+  font-style: italic;
+  font-weight: 340;
+  line-height: 1.2;
+  color: var(--ink);
+  max-width: 15rem;
+  text-wrap: balance;
+}
+.promise--true { color: var(--clay); }
+
+/* As far as it got: a small measured reach at the widest turn */
+.reach-label {
+  position: absolute;
+  z-index: 2;
+  left: calc(var(--x) * 1% + var(--drift-pad));
+  top: calc(var(--y) / 4.85 * 1%);
+  transform: translateY(-50%);
+  color: var(--clay);
+  white-space: nowrap;
+}
+
+/* the shared end */
+.drift-ends {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--s-2);
+  padding: var(--s-5) 0 0 calc(8% - var(--node) / 2);
+}
+.drift-key {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  color: var(--ink);
+}
+.drift-key::before {
+  content: "";
+  width: 1.25rem;
+  height: 0;
+  border-top: var(--line-w) solid var(--ink);
+}
+.drift-key--true::before { border-top-color: var(--clay); }
+.drift-ends .promise { margin-top: var(--s-2); }
+
+.drift-dot {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 3;
+  width: var(--pulse);
+  height: var(--pulse);
+  margin: calc(var(--pulse) / -2) 0 0 calc(var(--pulse) / -2);
+  border-radius: 50%;
+  opacity: 0;
+  pointer-events: none;
+}
+.drift-dot--true { background: var(--clay); box-shadow: 0 0 0 .3125rem var(--clay-halo); }
+.drift-dot--does { background: var(--ink); }
+
+/* Live state: only added by JS, removed by book.js for Still.
+   Nothing is hidden; the lines draw down as the reader does. */
+.back-live .drift-svg {
+  clip-path: inset(0 0 calc((1 - var(--draw, 0)) * 100%) 0);
+  transition: clip-path var(--dur-fill) var(--ease);
+}
+.back-live .drift-dot {
+  opacity: 1;
+  transition: transform var(--dur-fill) var(--ease), opacity var(--dur-quick) var(--ease);
+}
+.back-live .drift-dot.is-home { opacity: 0; }
+.back-live .turn:not(.is-reached) .drift-label { transform: translateY(calc(var(--s-3) * -1)); }
+.back-live .turn:not(.is-reached) .tag { color: var(--muted); border-color: var(--rule); }
+.back-live .turn:not(.is-back) .drift-back { color: var(--muted); }
+.back-live .turn:not(.is-reached) .drift-node { border-color: var(--rule); }
+.back-live .drift:not(.is-arrived) .drift-node--end { background: var(--paper); border-color: var(--rule); }
+.back-live .drift:not(.is-arrived) .drift-key,
+.back-live .drift:not(.is-arrived) .promise--true { color: var(--muted); }
+</style>
+</head>
+<body>
+
+<a class="skip" href="#chapter">Skip to content</a>
+
+<header class="running" role="banner">
+  <a class="running-link" href="index.html">The Architecture of Excellence</a>
+  <a class="running-link running-contents" href="#contents">Contents</a>
+</header>
+
+<main id="main">
+
+  <section class="opening" id="chapter" aria-labelledby="chapter-title" tabindex="-1">
+    <div class="measure">
+      <p class="label kicker">Chapter eight</p>
+      <h1 class="opening-title" id="chapter-title">The Pursuit of Excellence</h1>
+      <p class="lede">Northfield did not become a company that stops drifting. There is no such company. It became one that notices sooner and comes back.</p>
+    </div>
+  </section>
+
+  <section class="chapter" aria-labelledby="s-twelve">
+    <div class="measure prose section-break">
+      <h2 class="h2" id="s-twelve">Year twelve</h2>
+      <p>Three years later, Northfield was a good company to deal with again. Stores said so. The spare cases rode on every truck, the button took ten seconds, and the claims team had become four people who knew more about why bottles break than anyone in the business.</p>
+      <p>It would be a tidy place to stop. It would also be chapter one. Northfield had felt finished before, in its first year, and what followed was nine years of sensible decisions.</p>
+      <p>So here is what happened next, because it is the part that matters.</p>
+    </div>
+  </section>
+
+  <section class="chapter" aria-labelledby="s-again">
+    <div class="measure prose section-break">
+      <h2 class="h2" id="s-again">The same morning, again</h2>
+      <p>In the spring of year twelve, the monthly spot check turned up a driver who had replaced thirty cases at one store in three weeks. It was not a bad road this time. The store belonged to his brother-in-law.</p>
+      <p>It cost about twelve hundred dollars, which is twice what the two false claims had cost in year three.</p>
+      <p>And the room did what rooms do. Someone proposed that any replacement of five cases or more should need a manager’s approval. Nobody objected at first, because it was a sensible answer to a real problem.</p>
+      <p>You have read this chapter. It was the first one.</p>
+    </div>
+  </section>
+
+  <section class="chapter" aria-labelledby="s-different">
+    <div class="measure prose section-break">
+      <h2 class="h2" id="s-different">What was different</h2>
+      <p>Three things were different this time, and none of them was that the people were wiser.</p>
+      <p>The first was how long it took to find. In year three nobody was looking, and the pattern came to light by accident. In year twelve the spot check found it in three weeks, because looking was somebody’s job.</p>
+      <p>The second was that someone could say so. A regional manager said, out loud, that this was how the last one started. Nine years earlier that sentence would have been taken offline.</p>
+      <p>The third was the card. Every rule at Northfield now had to say what it protected against and what it would cost. So before the rule was written, Ines’s old team priced it. Five hundred approvals a year, to stop a problem that had happened once. The driver was dealt with, as a person who had done something wrong. The rule was never written.</p>
+      <p>That is all that happened. It took one meeting. I think it is the most impressive thing in this book.</p>
+    </div>
+  </section>
+
+  <section class="chapter" aria-labelledby="s-habit">
+    <div class="measure prose section-break">
+      <h2 class="h2" id="s-habit">The habit of coming back</h2>
+      <p>I used to think of excellence as a level a company reaches. I don’t anymore. Drift is the default, as chapter one said, and it does not stop being the default because a company had a good year.</p>
+      <p>Excellence is not the absence of drift. It is the habit of coming back. A company wanders from its customer a little every day, the way attention wanders, and the excellent ones are not the ones that never wander. They are the ones that notice sooner, say so without fuss, and return.</p>
+      <p>That is why the measure I trust most is a distance. Not how few mistakes a company makes, but how long it takes between finding one and changing whatever produced it. Northfield’s first bad rule lasted six years. Its second lasted one meeting.</p>
+    </div>
+  </section>
+
+  <blockquote class="pull">
+    <p>Excellence is not the absence of drift. It is the habit of coming back.</p>
+  </blockquote>
+
+  <figure class="fig" id="fig-9" aria-labelledby="fig9-title">
+    <div class="fig-inner">
+      <div class="fig-head">
+        <p class="label fig-num">Fig. 9</p>
+        <h3 class="fig-title" id="fig9-title">A degree at a time, and back</h3>
+        <p class="fig-sub">Northfield’s promise to a store, three more years.</p>
+      </div>
+
+      <div class="drift" data-drift>
+        <div class="drift-draw" data-draw>
+          <svg class="drift-svg" viewBox="0 0 100 485" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+            <polyline class="drift-path" points="8,0 8,80 11.497,130 8,180 8,205 12.812,260 8,315 8,340 13.781,395 8,450 8,485"/>
+            <line class="drift-true" x1="8" y1="0" x2="8" y2="485"/>
+            <line class="drift-reach" x1="8" y1="395" x2="13.781" y2="395"/>
+          </svg>
+
+          <span class="at drift-node drift-node--start" style="--x:8;--y:0" aria-hidden="true"></span>
+          <div class="at drift-label drift-label--start" style="--x:8;--y:0">
+            <span class="tag">Year 9</span>
+            <span class="promise">Replaced on the spot.</span>
+          </div>
+
+          <ol class="turns">
+            <li class="turn" data-turn data-y="130" data-back="180" style="--x:11.497;--y:130">
+              <span class="at drift-node" aria-hidden="true"></span>
+              <div class="drift-label">
+                <span class="tag">Year 10</span>
+                <span class="drift-off">A form added to the spot check.</span>
+                <span class="drift-back">Removed at the next review.</span>
+              </div>
+            </li>
+            <li class="turn" data-turn data-y="260" data-back="315" style="--x:12.812;--y:260">
+              <span class="at drift-node" aria-hidden="true"></span>
+              <div class="drift-label">
+                <span class="tag">Year 11</span>
+                <span class="drift-off">Three new buttons on the handheld.</span>
+                <span class="drift-back">Two taken off after a driver said so.</span>
+              </div>
+            </li>
+            <li class="turn" data-turn data-y="395" data-back="450" style="--x:13.781;--y:395">
+              <span class="at drift-node" aria-hidden="true"></span>
+              <div class="drift-label">
+                <span class="tag">Year 12</span>
+                <span class="drift-off">An approval proposed for five cases or more.</span>
+                <span class="drift-back">Priced, and never written.</span>
+              </div>
+              <span class="label reach-label" style="--x:13.781;--y:395">As far as it got</span>
+            </li>
+          </ol>
+
+          <span class="at drift-node drift-node--end" style="--x:8;--y:485" aria-hidden="true"></span>
+
+          <span class="drift-dot drift-dot--true is-home" aria-hidden="true" data-dot-true></span>
+          <span class="drift-dot drift-dot--does is-home" aria-hidden="true" data-dot-does></span>
+        </div>
+
+        <div class="drift-ends">
+          <span class="label drift-key drift-key--true">What the store needs</span>
+          <span class="label drift-key">What Northfield does</span>
+          <span class="promise promise--true">Still today.</span>
+        </div>
+      </div>
+    </div>
+    <figcaption class="fig-cap">An illustration, not a measurement. The line never stops wandering. It stops getting far.</figcaption>
+  </figure>
+
+  <section class="chapter" aria-labelledby="s-better">
+    <div class="measure prose section-break">
+      <h2 class="h2" id="s-better">Three kinds of better</h2>
+      <p>There are three kinds of better, and they are easy to confuse. A company can do things right, which is efficiency. The claims portal would have been that. It can do the right things, which is effectiveness. Letting the driver decide was that. Or it can become a company that keeps finding the right things and keeps getting better at doing them, without waiting for a crisis or a hero. Only the third one lasts, because only the third improves the thing that does the improving.</p>
+      <p>It is also the quiet one. Efficiency shows up in a report. Effectiveness shows up in a result. The third kind shows up as a meeting where a bad rule does not get written, and nothing happens, and nobody outside the room ever knows. Steve Jobs’s father taught him to finish the back of a cabinet, the part nobody sees. This is the back of the cabinet.</p>
+    </div>
+  </section>
+
+  <section class="chapter" aria-labelledby="s-sentences">
+    <div class="measure prose section-break">
+      <h2 class="h2" id="s-sentences">Three sentences</h2>
+      <p>The whole of this book fits in the three sentences on its cover.</p>
+      <p><span class="refrain">See clearly.</span> Go and look, especially at what everyone has learned to accept, and especially from where the customer stands.</p>
+      <p><span class="refrain">Understand deeply.</span> Find the forces underneath, look through all three lenses, and work out what the thing costs and who is paying.</p>
+      <p><span class="refrain">Act intentionally.</span> Change the system that produced the problem, put the decision where the work is, and make the better way the easier way, so that it lasts without a hero.</p>
+      <p>Then do it again, because it does not stay done. Preserve the purpose. Challenge the assumptions. Change the system.</p>
+    </div>
+  </section>
+
+  <section class="chapter" aria-labelledby="s-six">
+    <div class="measure prose section-break">
+      <h2 class="h2" id="s-six">Six o’clock</h2>
+      <p>In the fall of year twelve a new analyst joined Northfield and, in her first month, asked why drivers were allowed to give away product without approval.</p>
+      <p>Nobody gave her the history. Ines handed her the card, which said what the rule was for, what it cost, and when it would next be looked at. Then she told her which truck left at six.</p>
+      <p class="last">Excellence is the operating system that makes it last.</p>
+    </div>
+  </section>
+
+  <section class="ponder" aria-labelledby="ponder-label">
+    <div class="ponder-inner">
+      <p class="label" id="ponder-label">Something to ponder</p>
+      <p class="ponder-1">Whatever you fix will begin to drift the day after you fix it.</p>
+      <p class="ponder-2">That is not a failure. Notice sooner, and come back. Even a small return is a real one.</p>
+    </div>
+  </section>
+
+  <section class="next" aria-labelledby="next-label">
+    <p class="label" id="next-label">The end</p>
+    <p class="next-text"><a class="next-link" href="index.html"><span class="next-num">Begin again.</span> <span class="next-title">The Introduction.</span></a></p>
+  </section>
+
+</main>
+
+<footer class="foot" role="contentinfo">
+  <div class="foot-inner">
+    <nav id="contents" aria-label="Contents">
+      <p class="label">Contents</p>
+      <ol class="toc-list">
+        <li><a href="index.html"><span class="toc-num" aria-hidden="true"></span>Introduction</a></li>
+        <li><a href="chapter-one.html"><span class="toc-num">01</span>The Organization That Lost Its Way</a></li>
+        <li><a href="chapter-two.html"><span class="toc-num">02</span>Learning to See</a></li>
+        <li><a href="chapter-three.html"><span class="toc-num">03</span>The Seven Forces</a></li>
+        <li><a href="chapter-four.html"><span class="toc-num">04</span>The Hidden Cost of Complexity</a></li>
+        <li><a href="chapter-five.html"><span class="toc-num">05</span>The Three Lenses</a></li>
+        <li><a href="chapter-six.html"><span class="toc-num">06</span>From Potential to Performance</a></li>
+        <li><a href="chapter-seven.html"><span class="toc-num">07</span>Leadership as System Design</a></li>
+        <li><a href="chapter-eight.html" aria-current="page"><span class="toc-num">08</span>The Pursuit of Excellence</a></li>
+      </ol>
+    </nav>
+    <p class="label">Made by Matty</p>
+  </div>
+</footer>
+
+<script src="book.js" defer></script>
+
+<script>
+(function () {
+  "use strict";
+  var root = document.documentElement;
+  var drift = document.querySelector("[data-drift]");
+  var draw = drift && drift.querySelector("[data-draw]");
+  var fig = document.getElementById("fig-9");
+  if (!drift || !draw || !fig || !window.requestAnimationFrame) return;
+
+  var mq = window.matchMedia ? window.matchMedia("(prefers-reduced-motion: reduce)") : null;
+  if (mq && mq.matches) return;
+
+  /* the same points the SVG draws, in its 100 by 485 space */
+  var PTS = [[8, 0], [8, 80], [11.497, 130], [8, 180], [8, 205], [12.812, 260], [8, 315], [8, 340], [13.781, 395], [8, 450], [8, 485]];
+  var H = 485;
+  var turns = Array.prototype.slice.call(drift.querySelectorAll("[data-turn]"));
+  var dotTrue = drift.querySelector("[data-dot-true]");
+  var dotDoes = drift.querySelector("[data-dot-does]");
+  var ticking = false;
+  var listening = false;
+  var io = null;
+
+  function xAt(y) {
+    for (var i = 1; i < PTS.length; i++) {
+      if (y <= PTS[i][1]) {
+        var a = PTS[i - 1], b = PTS[i];
+        return a[0] + (b[0] - a[0]) * ((y - a[1]) / (b[1] - a[1]));
+      }
+    }
+    return PTS[PTS.length - 1][0];
+  }
+
+  function update() {
+    ticking = false;
+    var r = draw.getBoundingClientRect();
+    if (!r.height) return;
+    var vh = window.innerHeight || document.documentElement.clientHeight;
+    var p = (vh * 0.6 - r.top) / r.height;
+    if (p < 0) p = 0;
+    if (p > 1) p = 1;
+    var y = p * H;
+
+    draw.style.setProperty("--draw", p.toFixed(4));
+    for (var i = 0; i < turns.length; i++) {
+      var t = turns[i];
+      t.classList.toggle("is-reached", y >= Number(t.getAttribute("data-y")));
+      t.classList.toggle("is-back", y >= Number(t.getAttribute("data-back")));
+    }
+    var arrived = p >= 1;
+    drift.classList.toggle("is-arrived", arrived);
+
+    var home = p <= 0 || arrived;
+    var py = p * r.height;
+    dotTrue.style.transform = "translate(" + (0.08 * r.width).toFixed(1) + "px," + py.toFixed(1) + "px)";
+    dotDoes.style.transform = "translate(" + (xAt(y) / 100 * r.width).toFixed(1) + "px," + py.toFixed(1) + "px)";
+    dotTrue.classList.toggle("is-home", home);
+    dotDoes.classList.toggle("is-home", home);
+  }
+
+  function onScroll() {
+    if (!ticking) {
+      ticking = true;
+      window.requestAnimationFrame(update);
+    }
+  }
+
+  function listen(on) {
+    if (on === listening) return;
+    listening = on;
+    if (on) {
+      window.addEventListener("scroll", onScroll, { passive: true });
+      window.addEventListener("resize", onScroll);
+    } else {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+    }
+  }
+
+  function stopLive() {
+    listen(false);
+    if (io) io.disconnect();
+    root.classList.remove("back-live");
+  }
+
+  try {
+    root.classList.add("back-live");
+    update();
+  } catch (e) {
+    root.classList.remove("back-live");
+    return;
+  }
+
+  if ("IntersectionObserver" in window) {
+    io = new IntersectionObserver(function (entries) {
+      for (var i = 0; i < entries.length; i++) listen(entries[i].isIntersecting);
+      onScroll();
+    }, { rootMargin: "50% 0px 50% 0px" });
+    io.observe(fig);
+  } else {
+    listen(true);
+  }
+
+  window.addEventListener("load", onScroll);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(onScroll);
+
+  if (mq) {
+    var onPref = function (e) { if (e.matches) stopLive(); };
+    if (mq.addEventListener) mq.addEventListener("change", onPref);
+    else if (mq.addListener) mq.addListener(onPref);
+  }
+})();
+</script>
+</body>
+</html>

@@ -15,6 +15,8 @@ Static pages, no build step:
   small three-ring lens glyph, which later chapters reuse.
 - `chapter-six.html` is Chapter six, From Potential to Performance.
 - `chapter-seven.html` is Chapter seven, Leadership as System Design.
+- `chapter-eight.html` is Chapter eight, The Pursuit of Excellence, the last
+  chapter. Its closing link goes back to the Introduction.
 - `book.css` holds the styles the pages share.
 - `book.js` builds the header Menu: the contents and the Accessibility options
   (text size, light, contrast, spacing, motion). Choices are kept in the
