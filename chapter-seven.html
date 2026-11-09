@@ -1,0 +1,576 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Leadership as System Design | The Architecture of Excellence</title>
+<meta name="description" content="Chapter seven of The Architecture of Excellence by Matthew Schmidt. The founder had wanted the right thing for nine years. Why rescues are not leadership, what a leader can actually move, and the same building turned over.">
+<meta name="color-scheme" content="light dark">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500&family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..500&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="book.css">
+<script>
+/* apply saved reading options before first paint; book.js does the rest */
+(function(){try{var p=JSON.parse(localStorage.getItem("aoe-prefs")||"{}"),r=document.documentElement,ok={text:/^(l|xl)$/,theme:/^(light|candle)$/,contrast:/^more$/,spacing:/^roomy$/,motion:/^reduce$/};for(var k in ok){if(typeof p[k]==="string"&&ok[k].test(p[k]))r.setAttribute("data-"+k,p[k])}}catch(e){}})();
+</script>
+<style>
+/* ============================================================
+   Fig. 8 only: The same building, turned over
+   A section through a five-floor building, drawn twice. Ink
+   walls, hairline slabs, a ground line. The boardroom is the
+   heavy, hatched block: a roof that presses down in the first
+   drawing, a footing in the ground in the second. The decision
+   is a clay path in two channels just inside the walls.
+   ============================================================ */
+:root {
+  --bl-wall: .09375rem;      /* 1.5px at default size */
+  --bl-heavy: .125rem;
+  --bl-gutter-l: 1.75rem;    /* room left of the walls for the bracket */
+  --bl-gutter-r: .75rem;     /* room right of the walls for the footing */
+  --bl-overhang: .75rem;     /* how far the footing reaches past the walls */
+  --bl-ch: .875rem;          /* path channel, measured in from each wall */
+  --bl-pad: 2.25rem;         /* text clears both channels */
+  --bl-cap: .625rem;         /* where a path turns, in from the slab */
+  --bl-path: .125rem;
+  --bl-hatch: .375rem;
+  --bl-step: 180ms;
+  --bl-settle: 420ms;
+}
+
+.secs {
+  display: grid;
+  row-gap: var(--s-9);
+  max-width: var(--measure);
+  margin: 0 auto;
+  padding-top: var(--s-8);
+}
+.sec-label { margin-bottom: var(--s-5); text-align: center; color: var(--ink); }
+.sec-label span {
+  display: inline-block;
+  padding-bottom: var(--s-1);
+  border-bottom: 1px solid var(--clay);
+}
+
+/* above ground ends on the ground line, drawn full width */
+.sec-above { border-bottom: var(--bl-heavy) solid var(--ink); }
+.sec-below { padding-top: 0; }
+
+.bldg {
+  position: relative;
+  margin: 0 var(--bl-gutter-r) 0 var(--bl-gutter-l);
+  border-left: var(--bl-wall) solid var(--ink);
+  border-right: var(--bl-wall) solid var(--ink);
+}
+.floors { list-style: none; margin: 0; padding: 0; }
+
+.floor {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-1);
+  padding: var(--s-5) var(--bl-pad);
+  border-top: 1px solid var(--rule);
+  transition: transform var(--bl-settle) var(--ease);
+}
+.floors > .floor:first-child { border-top: var(--bl-heavy) solid var(--ink); }
+.room { color: var(--ink); }
+.job {
+  font-family: var(--font-serif);
+  font-size: var(--fs-fig);
+  line-height: 1.35;
+  color: var(--ink);
+  text-wrap: pretty;
+}
+
+/* the boardroom: the same heavy block in both drawings */
+.floor--heavy {
+  border-top: var(--bl-heavy) solid var(--ink);
+  background: repeating-linear-gradient(-45deg, var(--rule) 0 1px, transparent 1px var(--bl-hatch));
+}
+.floor--heavy .room,
+.floor--heavy .job {
+  align-self: flex-start;
+  padding: 0 var(--s-2);
+  margin-left: calc(var(--s-2) * -1);
+  background: var(--paper);
+}
+.floor--footing {
+  margin: 0 calc(var(--bl-overhang) * -1);
+  padding-inline: calc(var(--bl-pad) + var(--bl-overhang));
+  border: var(--bl-heavy) solid var(--ink);
+  border-top: 0;
+}
+.bldg--footing { border-left: 0; border-right: 0; }
+.floors > .floor.floor--footing { border-top: 0; }
+
+/* the crown: the customer ring the whole building holds up */
+.crown {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 0 var(--bl-gutter-r) 0 var(--bl-gutter-l);
+}
+.crown-ring {
+  width: 1rem;
+  height: 1rem;
+  border: var(--line-w) solid var(--clay);
+  border-radius: 50%;
+}
+.crown-stem { width: var(--bl-wall); height: var(--s-5); background: var(--clay); }
+
+/* the decision's path */
+.pth {
+  position: absolute;
+  z-index: 1;
+  left: var(--bl-ch);
+  width: var(--bl-path);
+  margin-left: calc(var(--bl-path) / -2);
+  background: var(--clay);
+  transition: transform var(--bl-step) linear;
+  transition-delay: calc(var(--o, 0) * var(--bl-step));
+}
+.pth--r { left: auto; right: var(--bl-ch); margin: 0 calc(var(--bl-path) / -2) 0 0; }
+.pth--full { top: -1px; bottom: -1px; }
+.pth--mid-down { top: 50%; bottom: -1px; }
+.pth--top-mid { top: -1px; bottom: 50%; }
+.pth--cap-down { top: var(--bl-cap); bottom: -1px; }
+.pth--top-foot { top: -1px; bottom: var(--bl-cap); }
+.pth--h {
+  left: var(--bl-ch);
+  right: var(--bl-ch);
+  width: auto;
+  height: var(--bl-path);
+  margin: calc(var(--bl-path) / -2) 0 0 0;
+}
+.pth--h-cap { top: var(--bl-cap); }
+.pth--h-foot { top: auto; bottom: var(--bl-cap); margin: 0 0 calc(var(--bl-path) / -2) 0; }
+
+.pdot,
+.pring {
+  position: absolute;
+  z-index: 2;
+  top: 50%;
+  width: .625rem;
+  height: .625rem;
+  margin-top: -.3125rem;
+  border-radius: 50%;
+}
+.pdot { left: calc(var(--bl-ch) - .3125rem); background: var(--clay); }
+.pring {
+  right: calc(var(--bl-ch) - .3125rem);
+  background: var(--paper);
+  border: var(--line-w) solid var(--clay);
+  transition: opacity var(--dur-settle) var(--ease);
+  transition-delay: calc(var(--o, 0) * var(--bl-step));
+}
+
+/* Holding it up: a dimension line down the three lower floors */
+.floor--hold::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: calc((var(--bl-gutter-l) - var(--s-3)) * -1 - var(--bl-wall));
+  border-left: 1px solid var(--clay);
+}
+.floor--footing.floor--hold::before { left: calc((var(--bl-gutter-l) - var(--s-3) - var(--bl-overhang)) * -1 - var(--bl-heavy)); }
+.floor--hold-first::after,
+.floor--footing::after {
+  content: "";
+  position: absolute;
+  left: calc((var(--bl-gutter-l) - var(--s-3)) * -1 - var(--bl-wall) - .25rem);
+  width: .5625rem;
+  border-top: 1px solid var(--clay);
+}
+.floor--hold-first::after { top: 0; }
+.floor--footing::after {
+  bottom: 0;
+  left: calc((var(--bl-gutter-l) - var(--s-3) - var(--bl-overhang)) * -1 - var(--bl-heavy) - .25rem);
+}
+.hold-label {
+  position: absolute;
+  z-index: 2;
+  top: 50%;
+  left: calc((var(--bl-gutter-l) - var(--s-3)) * -1 - var(--bl-wall));
+  padding: var(--s-2) 0;
+  background: var(--paper);
+  color: var(--clay);
+  font-size: var(--fs-micro);
+  letter-spacing: var(--track-micro);
+  white-space: nowrap;
+  writing-mode: vertical-rl;
+  transform: translate(-50%, -50%) rotate(180deg);
+}
+
+.sec-notes { margin-top: var(--s-5); text-align: center; }
+.sec-path {
+  font-family: var(--font-sans);
+  font-size: var(--fs-small);
+  line-height: 1.45;
+  color: var(--muted);
+  text-wrap: balance;
+}
+.sec-count {
+  margin-top: var(--s-3);
+  font-family: var(--font-serif);
+  font-size: var(--fs-count);
+  font-style: italic;
+  font-weight: 340;
+  line-height: 1.1;
+  color: var(--clay);
+  transition: color var(--dur-settle) var(--ease);
+}
+
+/* wide: both buildings stand on one ground line */
+@media (min-width: 56rem) {
+  .secs {
+    max-width: 52rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: auto auto auto auto;
+    column-gap: var(--s-8);
+    row-gap: 0;
+  }
+  .sec { display: contents; }
+  .sec--a > * { grid-column: 1; }
+  .sec--b > * { grid-column: 2; }
+  .sec-label { grid-row: 1; }
+  .sec-above { grid-row: 2; align-self: end; }
+  .sec-below { grid-row: 3; }
+  .sec-notes { grid-row: 4; }
+}
+
+/* Live state: added by JS only, removed by book.js for Still.
+   Before: the path climbs, turns and comes back down, then the
+   count. After: the floors settle from the footing up, then the
+   short path closes. */
+.build-live .sec:not(.is-played) .pth--up { transform: scaleY(0); }
+.build-live .sec:not(.is-played) .pth--down { transform: scaleY(0); }
+.build-live .sec:not(.is-played) .pth--h { transform: scaleX(0); }
+.build-live .sec:not(.is-played) .pring { opacity: 0; }
+.build-live .sec:not(.is-played) .sec-count { color: var(--muted); }
+.build-live .pth--up { transform-origin: bottom; }
+.build-live .pth--down { transform-origin: top; }
+.build-live .pth--h { transform-origin: left; }
+.build-live .pth--h.pth--rtl { transform-origin: right; }
+.build-live .sec .sec-count { transition-delay: calc(var(--o, 0) * var(--bl-step)); }
+.build-live .sec--b:not(.is-played) .floor { transform: translateY(calc(var(--s-3) * -1)); }
+.build-live .sec--b .floor { transition-delay: calc(var(--k, 0) * var(--bl-step)); }
+</style>
+</head>
+<body>
+
+<a class="skip" href="#chapter">Skip to content</a>
+
+<header class="running" role="banner">
+  <a class="running-link" href="index.html">The Architecture of Excellence</a>
+  <a class="running-link running-contents" href="#contents">Contents</a>
+</header>
+
+<main id="main">
+
+  <section class="opening" id="chapter" aria-labelledby="chapter-title" tabindex="-1">
+    <div class="measure">
+      <p class="label kicker">Chapter seven</p>
+      <h1 class="opening-title" id="chapter-title">Leadership as System Design</h1>
+      <p class="lede">The founder had wanted the right thing for nine years. It turned out that wanting was never the job.</p>
+    </div>
+  </section>
+
+  <section class="chapter" aria-labelledby="s-fastest">
+    <div class="measure prose section-break">
+      <h2 class="h2" id="s-fastest">The fastest claims process at Northfield</h2>
+      <p>For nine years the founder did two things about broken cases. Once a year, at the company meeting, came the line everyone knew: “we fix it today.” And a few times a month, when a store was angry enough to find the right number, the founder took the call personally and had a case on a truck within the hour.</p>
+      <p>Both felt like leadership. The first was a speech. The second was a rescue.</p>
+      <p>The speech changed nothing, for the reasons in the last chapter. The rescues were worse than nothing, and it took a long time to see why. Every one of them worked. Every one of them also taught Northfield that the way to get a store looked after was to reach the founder.</p>
+      <p>By year nine, the fastest claims process the company had was the founder’s cell phone.</p>
+      <p>A leader who fixes the case leaves the system that produced it exactly as it was, and adds one thing to it. The company now needs them.</p>
+    </div>
+  </section>
+
+  <section class="chapter" aria-labelledby="s-move">
+    <div class="measure prose section-break">
+      <h2 class="h2" id="s-move">What a leader can actually move</h2>
+      <p>Look at what the founder did in the third try, the one that worked. It was not a speech. It was a change to what regional managers were measured on, and nobody else in the company could have made it.</p>
+      <p>That is the pattern. A leader has surprisingly few real tools, and a speech is not one of them. There is where a decision sits. There is what gets measured and paid for. There is what the leader asks about on an ordinary Tuesday. There is what happens to the first person who gets it wrong. And there is what gets taken away.</p>
+      <p>None of those is doing the work. All of them shape the work everyone else does. That is what I mean by design. The founder’s job was never to replace the case. It was to build a company where the case got replaced.</p>
+    </div>
+  </section>
+
+  <blockquote class="pull">
+    <p>The job was never to replace the case. It was to build a company where the case got replaced.</p>
+  </blockquote>
+
+  <section class="chapter" aria-labelledby="s-step">
+    <div class="measure prose section-break">
+      <h2 class="h2" id="s-step">When to step in</h2>
+      <p>This does not mean a leader should never step in. It means knowing which kind of problem is in front of you.</p>
+      <p>Step in when a decision cannot be undone. Step in when the truth has stopped traveling, and people are telling you what is calm instead of what is so. Step in when a problem sits between two departments and belongs to neither, because nobody below you can pick it up.</p>
+      <p>For nearly everything else, the better move is slower and less satisfying. Leave the case to the people closest to it, and go and change whatever made it hard for them. The rescue feels like leadership. The repair is leadership.</p>
+    </div>
+  </section>
+
+  <figure class="fig" id="fig-8" aria-labelledby="fig8-title">
+    <div class="fig-inner">
+      <div class="fig-head">
+        <p class="label fig-num">Fig. 8</p>
+        <h3 class="fig-title" id="fig8-title">The same building, turned over</h3>
+        <p class="fig-sub">Where the decision sits, before and after.</p>
+      </div>
+
+      <div class="secs" data-secs>
+
+        <div class="sec sec--a" data-sec>
+          <h4 class="label sec-label" id="sec-a"><span>Before</span></h4>
+          <div class="sec-above">
+            <div class="bldg bldg--a">
+              <ol class="floors" aria-labelledby="sec-a">
+                <li class="floor floor--heavy">
+                  <span class="label room">In the boardroom</span>
+                  <span class="job">Sets the rule.</span>
+                </li>
+                <li class="floor">
+                  <span class="pth pth--up pth--cap-down" style="--o:3" aria-hidden="true"></span>
+                  <span class="pth pth--h pth--h-cap" style="--o:4" aria-hidden="true"></span>
+                  <span class="pth pth--r pth--down pth--cap-down" style="--o:5" aria-hidden="true"></span>
+                  <span class="label room">At the regional office</span>
+                  <span class="job">Approves.</span>
+                </li>
+                <li class="floor">
+                  <span class="pth pth--up pth--full" style="--o:2" aria-hidden="true"></span>
+                  <span class="pth pth--r pth--down pth--full" style="--o:6" aria-hidden="true"></span>
+                  <span class="label room">At the depot</span>
+                  <span class="job">Passes it up.</span>
+                </li>
+                <li class="floor">
+                  <span class="pth pth--up pth--full" style="--o:1" aria-hidden="true"></span>
+                  <span class="pth pth--r pth--down pth--full" style="--o:7" aria-hidden="true"></span>
+                  <span class="label room">On the truck</span>
+                  <span class="job">Writes it down.</span>
+                </li>
+                <li class="floor">
+                  <span class="pth pth--up pth--top-mid" style="--o:0" aria-hidden="true"></span>
+                  <span class="pth pth--r pth--down pth--top-mid" style="--o:8" aria-hidden="true"></span>
+                  <span class="pdot" aria-hidden="true"></span>
+                  <span class="pring" style="--o:9" aria-hidden="true"></span>
+                  <span class="label room">At the store</span>
+                  <span class="job">Waits.</span>
+                </li>
+              </ol>
+            </div>
+          </div>
+          <div class="sec-below" aria-hidden="true"></div>
+          <div class="sec-notes">
+            <p class="sec-path">The decision travels three floors up and three floors down.</p>
+            <p class="sec-count" style="--o:10">Sixteen days.</p>
+          </div>
+        </div>
+
+        <div class="sec sec--b" data-sec>
+          <h4 class="label sec-label" id="sec-b"><span>After</span></h4>
+          <div class="sec-above">
+            <div class="crown" aria-hidden="true"><span class="crown-ring"></span><span class="crown-stem"></span></div>
+            <div class="bldg bldg--b">
+              <ol class="floors" aria-labelledby="sec-b">
+                <li class="floor" style="--k:4">
+                  <span class="pth pth--down pth--mid-down" style="--o:5" aria-hidden="true"></span>
+                  <span class="pth pth--r pth--up pth--mid-down" style="--o:9" aria-hidden="true"></span>
+                  <span class="pdot" aria-hidden="true"></span>
+                  <span class="pring" style="--o:10" aria-hidden="true"></span>
+                  <span class="label room">At the store</span>
+                  <span class="job">Gets a new case.</span>
+                </li>
+                <li class="floor" style="--k:3">
+                  <span class="pth pth--down pth--top-foot" style="--o:6" aria-hidden="true"></span>
+                  <span class="pth pth--h pth--h-foot" style="--o:7" aria-hidden="true"></span>
+                  <span class="pth pth--r pth--up pth--top-foot" style="--o:8" aria-hidden="true"></span>
+                  <span class="label room">On the truck</span>
+                  <span class="job">Decides.</span>
+                </li>
+                <li class="floor floor--hold floor--hold-first" style="--k:2">
+                  <span class="label room">At the depot</span>
+                  <span class="job">Keeps spare cases on every truck.</span>
+                </li>
+                <li class="floor floor--hold" style="--k:1">
+                  <span class="label hold-label">Holding it up</span>
+                  <span class="label room">At the regional office</span>
+                  <span class="job">Checks a sample each month.</span>
+                </li>
+              </ol>
+            </div>
+          </div>
+          <div class="sec-below">
+            <div class="bldg bldg--b bldg--footing">
+              <ol class="floors floors--below" start="5" aria-labelledby="sec-b">
+                <li class="floor floor--heavy floor--footing floor--hold" style="--k:0">
+                  <span class="label room">In the boardroom</span>
+                  <span class="job">Sets the standard and what is measured.</span>
+                </li>
+              </ol>
+            </div>
+          </div>
+          <div class="sec-notes">
+            <p class="sec-path">The decision stays where the broken case is.</p>
+            <p class="sec-count" style="--o:11">The same day.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+    <figcaption class="fig-cap">An illustration, not a measurement. The second drawing is not a new company. It is the same five rooms, doing different jobs.</figcaption>
+  </figure>
+
+  <section class="chapter" aria-labelledby="s-reasons">
+    <div class="measure prose section-break">
+      <h2 class="h2" id="s-reasons">Rules that carry their reasons</h2>
+      <p>There is a risk in all of this, and Northfield nearly walked into it. Once a company sees what one bad rule cost, it wants to tear out the rest.</p>
+      <p>G. K. Chesterton had a line about fences. Do not take one down until you know why it was put up. It cuts both ways. A rule nobody can explain should not be removed on a hunch. It should not be kept on one either.</p>
+      <p>So the founder asked for something simple. Every rule at Northfield got a card with four lines on it: what it protects against, what it costs, who owns it, and when it will next be looked at.</p>
+      <p>They went through forty rules that year. Thirty-one stayed exactly as they were, because they were holding something up and now everyone could say what. Six were changed. Three were removed. Nobody remembers the three.</p>
+      <p>That is the difference between governing and controlling. A governed company can tell you what each rule is for. A controlled one can only tell you that it is the rule.</p>
+    </div>
+  </section>
+
+  <section class="chapter" aria-labelledby="s-stands">
+    <div class="measure prose section-break">
+      <h2 class="h2" id="s-stands">What stands when you are not there</h2>
+      <p>The following summer the founder took three weeks off, properly, for the first time since the company began.</p>
+      <p>A case broke on a Tuesday, in a region the founder had never visited. The driver replaced it and pressed the button. The store manager said thank you. Nobody above the truck heard about it until the monthly spot check, where it was one line among two hundred.</p>
+      <p>The founder’s phone did not ring. It was the best result of the year.</p>
+      <p>I think that is the fairest measure of a leader. Not how much the company needs them, but how much it can do because of them when they are somewhere else. Nobody judges a building by its foundation. It is standing on one all the same.</p>
+      <p>Northfield was now, by most measures, fixed. That is the dangerous moment, because fixed is how it felt in year one as well. The last chapter is about what it takes to stay that way.</p>
+    </div>
+  </section>
+
+  <section class="ponder" aria-labelledby="ponder-label">
+    <div class="ponder-inner">
+      <p class="label" id="ponder-label">Something to ponder</p>
+      <p class="ponder-1">Somewhere in your company, a decision keeps traveling upward because nobody closer to it is allowed to make it.</p>
+      <p class="ponder-2">Someone could go on answering it well. Or answer it once, by deciding who should.</p>
+    </div>
+  </section>
+
+  <section class="next" aria-labelledby="next-label">
+    <p class="label" id="next-label">Next</p>
+    <p class="next-text"><span class="next-num">Chapter eight.</span> <span class="next-title">The Pursuit of Excellence.</span></p>
+    <p class="label soon">Coming soon</p>
+  </section>
+
+</main>
+
+<footer class="foot" role="contentinfo">
+  <div class="foot-inner">
+    <nav id="contents" aria-label="Contents">
+      <p class="label">Contents</p>
+      <ol class="toc-list">
+        <li><a href="index.html"><span class="toc-num" aria-hidden="true"></span>Introduction</a></li>
+        <li><a href="chapter-one.html"><span class="toc-num">01</span>The Organization That Lost Its Way</a></li>
+        <li><a href="chapter-two.html"><span class="toc-num">02</span>Learning to See</a></li>
+        <li><a href="chapter-three.html"><span class="toc-num">03</span>The Seven Forces</a></li>
+        <li><a href="chapter-four.html"><span class="toc-num">04</span>The Hidden Cost of Complexity</a></li>
+        <li><a href="chapter-five.html"><span class="toc-num">05</span>The Three Lenses</a></li>
+        <li><a href="chapter-six.html"><span class="toc-num">06</span>From Potential to Performance</a></li>
+        <li><a href="chapter-seven.html" aria-current="page"><span class="toc-num">07</span>Leadership as System Design</a></li>
+      </ol>
+    </nav>
+    <p class="label">Made by Matty</p>
+  </div>
+</footer>
+
+<script src="book.js" defer></script>
+
+<script>
+(function () {
+  "use strict";
+  var root = document.documentElement;
+  var box = document.querySelector("[data-secs]");
+  var fig = document.getElementById("fig-8");
+  if (!box || !fig || !window.requestAnimationFrame) return;
+
+  var mq = window.matchMedia ? window.matchMedia("(prefers-reduced-motion: reduce)") : null;
+  if (mq && mq.matches) return;
+
+  /* each drawing plays once, when its building is well into view;
+     anything already scrolled past plays at once */
+  var secs = Array.prototype.slice.call(box.querySelectorAll("[data-sec]"));
+  var ticking = false;
+  var listening = false;
+  var io = null;
+
+  function topOf(sec) {
+    /* the section itself may be display: contents on wide screens */
+    var b = sec.querySelector(".bldg");
+    return (b || sec).getBoundingClientRect().top;
+  }
+
+  function update() {
+    ticking = false;
+    var vh = window.innerHeight || document.documentElement.clientHeight;
+    var done = 0;
+    for (var i = 0; i < secs.length; i++) {
+      if (!secs[i].classList.contains("is-played") && topOf(secs[i]) < vh * 0.6) {
+        secs[i].classList.add("is-played");
+      }
+      if (secs[i].classList.contains("is-played")) done++;
+    }
+    if (done === secs.length) {
+      listen(false);
+      if (io) io.disconnect();
+    }
+  }
+
+  function onScroll() {
+    if (!ticking) {
+      ticking = true;
+      window.requestAnimationFrame(update);
+    }
+  }
+
+  function listen(on) {
+    if (on === listening) return;
+    listening = on;
+    if (on) {
+      window.addEventListener("scroll", onScroll, { passive: true });
+      window.addEventListener("resize", onScroll);
+    } else {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+    }
+  }
+
+  function stopLive() {
+    listen(false);
+    if (io) io.disconnect();
+    root.classList.remove("build-live");
+  }
+
+  try {
+    root.classList.add("build-live");
+    update();
+  } catch (e) {
+    root.classList.remove("build-live");
+    return;
+  }
+
+  if ("IntersectionObserver" in window) {
+    io = new IntersectionObserver(function (entries) {
+      for (var i = 0; i < entries.length; i++) listen(entries[i].isIntersecting);
+      onScroll();
+    }, { rootMargin: "50% 0px 50% 0px" });
+    io.observe(fig);
+  } else {
+    listen(true);
+  }
+
+  window.addEventListener("load", onScroll);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(onScroll);
+
+  if (mq) {
+    var onPref = function (e) { if (e.matches) stopLive(); };
+    if (mq.addEventListener) mq.addEventListener("change", onPref);
+    else if (mq.addListener) mq.addListener(onPref);
+  }
+})();
+</script>
+</body>
+</html>
