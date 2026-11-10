@@ -22,6 +22,10 @@ Static pages, no build step:
   (text size, light, contrast, spacing, motion). Choices are kept in the
   reader's browser. Without it, the header link goes to the contents in the footer.
 
+- `favicon.svg` is the tab icon. `og-image.png` is the picture shown when a link to
+  the book is shared, rendered from `og-image-source.html`. The link-preview tags in
+  each page point at the Railway address, so update them if the address changes.
+
 ## Deploying on Railway
 
 1. Push this repo to GitHub.

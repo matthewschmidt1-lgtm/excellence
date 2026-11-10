@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Link preview image source: The Architecture of Excellence</title>
+<!-- Source for og-image.png (1200 x 630). Re-render with headless Chrome:
+     "Google Chrome" --headless=new --hide-scrollbars --window-size=1200,630 --screenshot=og-image.png og-image-source.html -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400&family=Fraunces:ital,opsz,wght@0,9..144,340;1,9..144,300&family=IBM+Plex+Mono:wght@400&display=swap">
+<style>
+  :root { --paper:#F3EEE4; --ink:#2A2621; --muted:#655D51; --clay:#8A5638; }
+  * { box-sizing: border-box; margin: 0; }
+  html, body { width: 1200px; height: 630px; overflow: hidden; }
+  body { background: var(--paper); color: var(--ink); display: grid; grid-template-columns: 1fr 220px; }
+  .text { padding: 88px 0 80px 96px; display: flex; flex-direction: column; }
+  .title { font-family: "Fraunces", Georgia, serif; font-optical-sizing: auto; font-weight: 340; font-size: 104px; line-height: 1.02; letter-spacing: -.02em; }
+  .title em { display: block; font-weight: 300; font-style: italic; }
+  .line { margin-top: 40px; font-family: "Archivo", Helvetica, Arial, sans-serif; font-size: 30px; color: var(--muted); }
+  .by { margin-top: auto; font-family: "IBM Plex Mono", Menlo, monospace; font-size: 22px; letter-spacing: .14em; text-transform: uppercase; }
+  .motif { position: relative; }
+  .motif i { position: absolute; left: 50%; display: block; }
+  .motif .start { top: 110px; width: 26px; height: 26px; margin-left: -13px; border-radius: 50%; background: var(--ink); }
+  .motif .stem { top: 123px; bottom: 123px; width: 4px; margin-left: -2px; background: var(--clay); }
+  .motif .end { bottom: 110px; width: 26px; height: 26px; margin-left: -13px; border-radius: 50%; background: var(--paper); border: 4px solid var(--clay); }
+</style>
+</head>
+<body>
+  <div class="text">
+    <p class="title">The Architecture <em>of Excellence</em></p>
+    <p class="line">See clearly. Understand deeply. Act intentionally.</p>
+    <p class="by">Matthew Schmidt</p>
+  </div>
+  <div class="motif" aria-hidden="true"><i class="stem"></i><i class="start"></i><i class="end"></i></div>
+</body>
+</html>
